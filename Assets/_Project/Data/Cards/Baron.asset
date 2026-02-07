@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d3f0b3698384540ac60814b2846284, type: 3}
+  m_Name: Baron
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  type: 3
+  cardValue: 3
+  effect: {fileID: 11400000, guid: 08aec19a85b922d4f93e01377ea914a8, type: 2}
+  cardBack: {fileID: -5044639396517056953, guid: eaf25b09f3e279243af9a4f71186c437, type: 3}
+  cardFront: {fileID: -1992604301333773876, guid: 4b5a5d5f06ff44a4d9d5eb9332bbaa6d, type: 3}
+  uiPrefab: {fileID: 3878465382411716493, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d3f0b3698384540ac60814b2846284, type: 3}
+  m_Name: Spy
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  type: 2
+  cardValue: 2
+  effect: {fileID: 11400000, guid: 66fcabd3a67be0542a3c170cee09730a, type: 2}
+  cardBack: {fileID: -5044639396517056953, guid: eaf25b09f3e279243af9a4f71186c437, type: 3}
+  cardFront: {fileID: 5866527960475976465, guid: 3740829e4b9e7fe49a6f1db7322396a6, type: 3}
+  uiPrefab: {fileID: 3878465382411716493, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}
