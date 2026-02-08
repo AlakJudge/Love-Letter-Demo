@@ -1,27 +1,52 @@
+using System;
 using UnityEngine;
 
 public enum TurnPhase { StartTurn, Draw, ChooseCard, SelectTarget, SelectGuess, ResolveEffect, CheckOutcome, EndTurn, EndRound, GameOver }
 
-public struct PlayCardCommand
-{
-    public int playerId;
-    public CardData card;
-    public int? targetPlayerId; // For cards that target another player
-    public int? guessValue; // for Guard
-}
-
 public class TurnController
 {
     public TurnPhase Phase { get; private set; } = TurnPhase.StartTurn;
-    public CardData pendingCard; // for cards that require additional input (e.g., target, guess)
-    public int? pendingTargetId; // to store target for Guard
-    private TurnLogger turnLogger = TurnLogger.Instance;
+    
+    // Pending state (will be synced in multiplayer)
+    public int pendingCardIndex = -1;
+    public int pendingTargetId = -1;
+
+    private TurnLogger turnLogger = TurnLogger.Instance;    
+
+    // Events for GameController to listen to
+    public event Action OnNeedTargetSelection;
+    public event Action OnNeedGuessSelection;
+    public event Action OnTurnComplete;
+    public event Action<PlayerState> OnRoundWin;
+    public event Action<PlayerState> OnGameWin;
+
+    public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
+    {
+        error = null;
+
+        switch (cmd.type)
+        {
+            case CommandType.PlayCard:
+                return ProcessPlayCard(game, cmd, rules, out error);
+            
+            case CommandType.SelectTarget:
+                return ProcessSelectTarget(game, cmd, rules, out error);
+            
+            case CommandType.SelectGuess:
+                return ProcessSelectGuess(game, cmd, rules, out error);
+            
+            default:
+                error = "Unknown command type";
+                return false;
+        }
+    }
 
     public void StartTurn(GameState game)
     {
         Phase = TurnPhase.StartTurn;
         game.CurrentPlayer.isProtected = false; // handmaid protection from previous turn wears off
         turnLogger.Log($"Player {game.CurrentPlayer.id + 1}'s turn begins.", game.turnNumber);
+        
         Phase = TurnPhase.Draw;
         Draw(game);
     }
@@ -33,155 +58,119 @@ public class TurnController
         Phase = TurnPhase.ChooseCard;
     }
 
-    public bool TryPlayCard(GameState game, CardData card, RuleValidation rules, EffectResolver resolver, out string error)
+    public bool ProcessPlayCard(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
         error = null;
 
         if (Phase != TurnPhase.ChooseCard) { error = "Not in ChooseCard phase."; return false; }
-        if (game.CurrentPlayer.id != game.currentPlayerIndex) { error = "Not your turn."; return false; }
-        if (!game.CurrentPlayer.hand.Contains(card)) { error = "Card not in hand."; return false; }
+        if (game.CurrentPlayer.id != cmd.playerId) { error = "Not your turn."; return false; }
+        if (cmd.cardIndex < 0 || cmd.cardIndex >= game.CurrentPlayer.hand.Count) { error = "Invalid card index."; return false; }
+        
+        var card = game.CurrentPlayer.hand[cmd.cardIndex];
 
         if (!rules.CanPlay(game, card, out error)) return false;
+        
+        pendingCardIndex = cmd.cardIndex;  
+        turnLogger.Log($"Player {game.CurrentPlayer.id + 1} played {card.type}.", game.turnNumber);
 
         // Check if card needs a target
         if (CardNeedsTarget(card.type))
         {
-            pendingCard = card;
             Phase = TurnPhase.SelectTarget;
-            Debug.Log($"Player {game.CurrentPlayer.id + 1} selected {card.name}. Choose a target.");
+            OnNeedTargetSelection?.Invoke();
             return true;
         }
-
-        // No target needed, play immediately
-        var cmd = new PlayCardCommand
-        {
-            playerId = game.CurrentPlayer.id,
-            card = card,
-            targetPlayerId = null,
-            guessValue = null
-        };
-
-        turnLogger.Log($"Player {game.CurrentPlayer.id + 1} played {card.type}.", game.turnNumber);
-
-        return PlayTurn(game, cmd, rules, resolver, out error);
+        // No target needed, resolve immediately
+        return ResolveCard(game, cmd.cardIndex, -1, 0);
     }
 
-    public bool TrySelectTarget(GameState game, int targetPlayerId, RuleValidation rules, EffectResolver resolver, out string error)
+    public bool ProcessSelectTarget(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
         error = null;
-        var cmd = new PlayCardCommand();
 
         if (Phase != TurnPhase.SelectTarget) { error = "Not in target selection phase."; return false; }
-        if (pendingCard == null) { error = "No pending card."; return false; }
+        if (pendingCardIndex < 0) { error = "No pending card."; return false; }
 
+        var card = game.CurrentPlayer.hand[pendingCardIndex];
+    
         // If card is Guard, Spy, Baron or King, can't target self. Unless there are no valid targets.
-        if (pendingCard.type == CardType.Guard || pendingCard.type == CardType.Spy 
-            || pendingCard.type == CardType.Baron || pendingCard.type == CardType.King)
+        if (card.type == CardType.Guard || card.type == CardType.Spy 
+            || card.type == CardType.Baron || card.type == CardType.King)
         {
             // If there are no unprotected and active players, allow target self without effect.
             if (rules.NoValidTargets(game))
             {
                 Debug.Log("No valid targets available.");
-                targetPlayerId = game.CurrentPlayer.id; // allow targeting self, but card effect will handle it as no target
+                cmd.targetPlayerId = game.CurrentPlayer.id; // allow targeting self, but card effect will handle it as no target
             }
-            else if (targetPlayerId == game.CurrentPlayer.id)
+            else if (cmd.targetPlayerId == game.CurrentPlayer.id)
             {
                 error = "Cannot target yourself with this card.";
                 return false;
             }
         }
 
-        TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} played {pendingCard.type}.", game.turnNumber);
+        pendingTargetId = cmd.targetPlayerId;
 
         // If Guard, go to guess selection phase
-        if (pendingCard.type == CardType.Guard)
-        {
-            pendingTargetId = targetPlayerId;
-            
-            if (targetPlayerId == game.CurrentPlayer.id)
+        if (card.type == CardType.Guard)
+        {            
+            if (cmd.targetPlayerId == game.CurrentPlayer.id)
                 {
                     // skip guess phase and end turn if targeting self with Guard (no effect)
                     // Still creates command for consistency and potential future use, but with no guess value.
-                    cmd = new PlayCardCommand
-                    {
-                        playerId = game.CurrentPlayer.id,
-                        card = pendingCard,
-                        targetPlayerId = targetPlayerId,
-                        guessValue = null
-                    };
                     TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} targeted themselves with Guard. No effect.", game.turnNumber);
+                    return ResolveCard(game, pendingCardIndex, cmd.targetPlayerId, 0);
                 }
             else
             {
                 Phase = TurnPhase.SelectGuess;
-                Debug.Log($"Player {game.CurrentPlayer.id + 1} targets Player {targetPlayerId + 1}. Now choose a card to guess.");
-                TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} targets Player {targetPlayerId + 1} with Guard. Now choose a card to guess.", game.turnNumber);
+                TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} targets Player {cmd.targetPlayerId + 1} with Guard. Now choose a card to guess.", game.turnNumber);
+                OnNeedGuessSelection.Invoke();
                 return true;
             }
-        }  
-        else
-        {
-            // For other cards, resolve immediately
-            cmd = new PlayCardCommand
-            {
-                playerId = game.CurrentPlayer.id,
-                card = pendingCard,
-                targetPlayerId = targetPlayerId,
-                guessValue = null
-            };
-            TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} selected Player {targetPlayerId + 1} as target.", game.turnNumber);
         }
-        var success = PlayTurn(game, cmd, rules, resolver, out error);
-        if (success)
-        {
-            pendingCard = null;
-            pendingTargetId = null;  
-        } 
-        return success;
+        return ResolveCard(game, pendingCardIndex, cmd.targetPlayerId, 0);
     }
 
-    public bool TrySelectGuess(GameState game, int guessValue, RuleValidation rules, EffectResolver resolver, out string error)
+    public bool ProcessSelectGuess(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
         error = null;
         if (Phase != TurnPhase.SelectGuess) { error = "Not in guess selection phase."; return false; }
-        if (pendingCard == null || !pendingTargetId.HasValue) { error = "No pending Guard to play."; return false; }
+        if (pendingCardIndex < 0 || pendingTargetId < 0) { error = "No pending Guard to play."; return false; }
 
-        // Command with turn play info
-        var cmd = new PlayCardCommand
-        {
-            playerId = game.CurrentPlayer.id,
-            card = pendingCard,
-            targetPlayerId = pendingTargetId,
-            guessValue = guessValue
-        };
-
-        var success = PlayTurn(game, cmd, rules, resolver, out error);
-
-        // Clear pending state to avoid unexpected issues
-        if (success)
-        {
-            pendingCard = null;
-            pendingTargetId = null;
-        }
-        return success;
+        return ResolveCard(game, pendingCardIndex, pendingTargetId, cmd.guessValue);
     }
 
-    public bool PlayTurn(GameState game, PlayCardCommand cmd, RuleValidation rules, EffectResolver resolver, out string error)
+    public bool ResolveCard(GameState game, int cardIndex, int targetId, int guessValue)
     {
-        error = null;
-        var controller = Object.FindFirstObjectByType<GameController>();
-        
-        // play card and discard from hand
-        game.CurrentPlayer.hand.Remove(cmd.card);
-        game.CurrentPlayer.discardPile.Add(cmd.card);
+        var card = game.CurrentPlayer.hand[cardIndex];
 
+        // play card and discard from hand
+        game.CurrentPlayer.hand.RemoveAt(cardIndex);
+        game.CurrentPlayer.discardPile.Add(card);
+
+        // Create full command for effect resolution
+        var fullCmd = new PlayerCommand
+        {
+            playerId = game.CurrentPlayer.id,
+            cardIndex = cardIndex,
+            targetPlayerId = targetId >= 0 ? targetId : -1,
+            guessValue = guessValue > 0 ? guessValue : 0
+        };
+        
         Phase = TurnPhase.ResolveEffect;
-        resolver.Resolve(game, cmd);
+        var resolver = new EffectResolver();
+        resolver.Resolve(game, fullCmd, card);
 
         Phase = TurnPhase.CheckOutcome;
 
+        // Clear pending state
+        pendingCardIndex = -1;
+        pendingTargetId = -1;
+
         // Check win conditions
-        WinConditionChecker checker = new WinConditionChecker();
+        var checker = new WinConditionChecker();
         if (checker.CheckRoundWinCondition(game, out PlayerState winner))
         {
             Debug.Log($"Player {winner.id + 1} wins the round!");
@@ -190,22 +179,22 @@ public class TurnController
             // Check if Game Over
             if (checker.CheckGameWinCondition(game, out PlayerState gameWinner))
             {
-                controller.UpdateUI();
                 Debug.Log($"Player {gameWinner.id + 1} wins the game with {gameWinner.tokens} tokens!");
                 TurnLogger.Instance.Log($"Player {gameWinner.id + 1} wins the game with {gameWinner.tokens} tokens!", game.turnNumber);
-                controller.OnGameOver(gameWinner);
                 Phase = TurnPhase.GameOver;
+                OnGameWin.Invoke(gameWinner);
                 return false;
             }
             else // If not, go to next round.
             {
-                controller.OnRoundOver(winner);
                 Phase = TurnPhase.EndRound;
+                OnRoundWin.Invoke(winner);
                 return false;
             }
         }
         Phase = TurnPhase.EndTurn;
         game.AdvanceToNextPlayer();
+        OnTurnComplete.Invoke();
 
         return true;
     }
