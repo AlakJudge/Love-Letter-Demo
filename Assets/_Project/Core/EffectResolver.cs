@@ -2,12 +2,12 @@ using System.Linq;
 
 public class EffectResolver
 {
-    public void Resolve(GameState game, PlayCardCommand cmd)
+    public void Resolve(GameState game, PlayerCommand cmd, CardData card)
     {
         var source = game.CurrentPlayer;
-        var target = cmd.targetPlayerId.HasValue ? game.players.First(p => p.id == cmd.targetPlayerId.Value) : null;
+        var target = cmd.targetPlayerId >= 0 ? game.players.FirstOrDefault(p => p.id == cmd.targetPlayerId) : null;
 
         // Resolve the effect of the played card
-        cmd.card.effect?.Resolve(game, source, target, cmd.guessValue);
+        card.effect.Resolve(game, source, target, cmd.guessValue);
     }
 }
