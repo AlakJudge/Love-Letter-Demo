@@ -29,14 +29,19 @@ public class GameController : MonoBehaviour
     private GameState game;
     private TurnController turn;
     private RuleValidation rules;
-    private EffectResolver resolver;
+
+    // For future networking
+    private bool isMultiplayer = false;
 
     void Start()
     {
-        // Hide rematch and quit buttons initially
-        if (rematchButton != null) rematchButton.gameObject.SetActive(false);
-        if (quitButton != null) quitButton.gameObject.SetActive(false);
+        InitializeGame();
+        SetupUI();
+        StartNewRound();
+    }
 
+    private void InitializeGame()
+    {
         // Build players
         var players = new List<PlayerState>();
         for (int i = 0; i < playerCount; i++) players.Add(new PlayerState(i));
@@ -46,34 +51,127 @@ public class GameController : MonoBehaviour
         game = new GameState(players, deck);
         turn = new TurnController();
         rules = new RuleValidation();
-        resolver = new EffectResolver();
 
-        // Deal initial hands
-        foreach (var p in game.players)
-            if (game.deck.Count > 0) p.hand.Add(game.deck.Pop());
-        Debug.Log("Dealt initial hands.");
-        
-        // Bind UI objects
-        ui.controller = this;
+        // Subscribe to turn events
+        turn.OnNeedTargetSelection += () => ui.EnableTargeting();
+        turn.OnNeedGuessSelection += () => ui.ShowGuardChoice();
+        turn.OnTurnComplete += OnTurnComplete;
+        turn.OnRoundWin += OnRoundOver;
+        turn.OnGameWin += OnGameOver;
+
+        BuildPlayerObjects();
+    }
+
+    private void SetupUI()
+    {
         ui.localPlayerId = localPlayerId;
         ui.showOpponentHands = showOpponentHands;
         ui.manualControlBots = manualControlBots;
-        ui.Bind(game, turn, rules, resolver);
+        ui.Bind(game);
 
-        BuildPlayerObjects();
-        
-        if (transitionView == null)
-            transitionView = FindFirstObjectByType<TransitionView>();
-
-        // Ensure logger exists
-        if (TurnLogger.Instance == null)
+        // Subscribe to UI input and convert to commands
+        ui.OnPlayCard += (playerId, cardIndex) => 
         {
-            var loggerObj = new GameObject("TurnLogger");
-            loggerObj.AddComponent<TurnLogger>();
+            var cmd = new PlayerCommand
+            {
+                type = CommandType.PlayCard,
+                playerId = playerId,
+                cardIndex = cardIndex,
+                targetPlayerId = -1,
+                guessValue = 0
+            };
+            ProcessCommand(cmd);
+        };
+
+        ui.OnSelectTarget += (playerId, targetId) => 
+        {
+            var cmd = new PlayerCommand
+            {
+                type = CommandType.SelectTarget,
+                playerId = playerId,
+                cardIndex = turn.pendingCardIndex,
+                targetPlayerId = targetId,
+                guessValue = 0
+            };
+            ProcessCommand(cmd);
+        };
+
+        ui.OnSelectGuess += (playerId, guess) => 
+        {
+            var cmd = new PlayerCommand
+            {
+                type = CommandType.SelectGuess,
+                playerId = playerId,
+                cardIndex = turn.pendingCardIndex,
+                targetPlayerId = turn.pendingTargetId,
+                guessValue = guess
+            };
+            ProcessCommand(cmd);
+        };
+    }
+
+    // NETWORKING ENTRY POINT
+    private void ProcessCommand(PlayerCommand cmd)
+    {
+        if (isMultiplayer)
+        {
+            // TODO: Send command to Photon server
+            return;
         }
 
-        // Start first round
-        StartNewRound();
+        // Local execution
+        ExecuteCommand(cmd);
+    }
+
+    // Called locally OR when receiving network command
+    public void ExecuteCommand(PlayerCommand cmd)
+    {
+        if (turn.ExecuteCommand(game, cmd, rules, out string error))
+        {
+            UpdateUI();
+        }
+        else
+        {
+            Debug.LogWarning($"Command failed: {error}");
+        }
+    }
+
+    private void OnTurnComplete()
+    {
+        ui.DisableTargeting();
+        turn.StartTurn(game);
+        UpdateUI();
+    }
+
+    private void OnRoundOver(PlayerState winner)
+    {
+        UpdateUI();
+
+        if (transitionView != null)
+        {
+            transitionView.OnTransitionFinished -= StartNewRound;
+            transitionView.OnTransitionFinished += StartNewRound;
+            transitionView.ShowTransition(
+                $"Player {winner.id + 1} wins the round!\n\nGet ready for the next round...",
+                roundOrGameOver: "RoundOver"
+            );
+        }
+    }
+
+    private void OnGameOver(PlayerState winner)
+    {
+        UpdateUI();
+
+        if (transitionView != null)
+        {
+            transitionView.ShowTransition(
+                $"Player {winner.id + 1} wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
+                roundOrGameOver: "GameOver"
+            );
+        }
+
+        if (rematchButton != null) rematchButton.gameObject.SetActive(true);
+        if (quitButton != null) quitButton.gameObject.SetActive(true);
     }
 
     public void StartNewRound()
@@ -89,8 +187,8 @@ public class GameController : MonoBehaviour
             // Tokens persist across rounds
         }
         // Reset turn controller state
-        turn.pendingCard = null;
-        turn.pendingTargetId = null;
+        turn.pendingCardIndex = -1;
+        turn.pendingTargetId = -1;
 
         // Rebuild and shuffle deck
         game.deck.Clear();
@@ -110,9 +208,8 @@ public class GameController : MonoBehaviour
                 player.hand.Add(game.deck.Pop());
         }
 
-        // Random starting player
-        game.currentPlayerIndex = Random.Range(0, playerCount);
 
+        game.currentPlayerIndex = Random.Range(0, playerCount); // Random starting player
         game.turnNumber = 1;
 
         // Clear log and start logging
@@ -122,39 +219,8 @@ public class GameController : MonoBehaviour
         // Start first turn
         turn.StartTurn(game);
         // Avoid potential targeting issues if last turn in previous round was a targeting effect
-        ui.DisableTargetingMode();
-        
-        ui.RefreshAll();
-        SyncPlayerObjects();
-    }
-
-    public void OnRoundOver(PlayerState winner)
-    {
-        Debug.Log("OnRoundOver");
-        if (transitionView == null) return;
-
-        transitionView.OnTransitionFinished -= StartNewRound;
-        transitionView.OnTransitionFinished += StartNewRound;       
-
-        transitionView.ShowTransition(
-            $"Player {winner.id + 1} wins the round!\n\nGet ready for the next round...",
-            roundOrGameOver: "RoundOver"
-            );
-    }
-
-    public void OnGameOver(PlayerState winner)
-    {
-        Debug.Log("OnGameOver");
-        if (transitionView == null) return;
-
-        transitionView.ShowTransition(
-            $"Player {winner.id + 1} wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
-            roundOrGameOver: "GameOver"
-            );
-        
-        // Show rematch and quit buttons
-        if (rematchButton != null) rematchButton.gameObject.SetActive(true);
-        if (quitButton != null) quitButton.gameObject.SetActive(true);
+        ui.DisableTargeting();
+        UpdateUI();
     }
 
     private void BuildPlayerObjects()
@@ -182,16 +248,11 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void SyncPlayerObjects()
-    {
-        if (playerManagers == null) return;
-        foreach (var pm in playerManagers) pm?.Sync();
-    }
-
     public void UpdateUI()
     {
         ui.RefreshAll();
-        SyncPlayerObjects();
+        if (playerManagers != null) // Sync player manager displays
+            foreach (var pm in playerManagers) pm?.Sync();
     }
 
     private void Shuffle(List<CardData> list)
