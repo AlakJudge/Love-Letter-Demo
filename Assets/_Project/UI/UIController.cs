@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class UIController : MonoBehaviour
@@ -17,22 +18,18 @@ public class UIController : MonoBehaviour
     public bool manualControlBots = false; // set by GameController
 
     private GameState game;
-    private TurnController turn;
-    private RuleValidation rules;
-    private EffectResolver resolver;
-
     private PlayerView playerArea;
     private OpponentView[] opponentAreas;
     private GuardChoiceView guardChoiceView;
 
-    public GameController controller;
+    // Events to send card index
+    public event Action<int, int> OnPlayCard;        // playerId, cardIndex
+    public event Action<int, int> OnSelectTarget;    // playerId, targetId
+    public event Action<int, int> OnSelectGuess;     // playerId, guess
 
-    public void Bind(GameState game, TurnController turn, RuleValidation rules, EffectResolver resolver)
+    public void Bind(GameState game)
     {
         this.game = game;
-        this.turn = turn;
-        this.rules = rules;
-        this.resolver = resolver;
 
        // Hide guard choice initially
         if (guardChoiceContainer != null)
@@ -45,11 +42,8 @@ public class UIController : MonoBehaviour
                 // When guessed card is selected, run rest of the turn normally.
                 guardChoiceView.OnGuessSelected += guessValue => 
                 {
-                    if (turn.TrySelectGuess(game, guessValue, rules, resolver, out var error))
-                    {
-                        turn.StartTurn(game);
-                        controller?.UpdateUI();
-                    }
+                    OnSelectGuess?.Invoke(game.CurrentPlayer.id, guessValue);
+                    guardChoiceView.gameObject.SetActive(false);
                 };
             }
         }
@@ -74,18 +68,10 @@ public class UIController : MonoBehaviour
             {
                 if (game.CurrentPlayer.id != localPlayerId && !manualControlBots) return;
 
-                if (turn.TryPlayCard(game, card, rules, resolver, out var error))
+                int cardIndex = game.CurrentPlayer.hand.IndexOf(card);
+                if (cardIndex >= 0)
                 {
-                    if (turn.Phase == TurnPhase.SelectTarget)
-                    {
-                        // Enable target selection
-                        SetTargetingMode(true);
-                    }
-                    else
-                    {
-                        turn.StartTurn(game);
-                    }
-                    controller?.UpdateUI();
+                    OnPlayCard.Invoke(game.CurrentPlayer.id, cardIndex);
                 }
             };
         }
@@ -94,22 +80,7 @@ public class UIController : MonoBehaviour
         {
             playerArea.OnTargetSelected += targetId =>
             {
-                if (turn.Phase != TurnPhase.SelectTarget) return;
-
-                if (turn.TrySelectTarget(game, targetId, rules, resolver, out var error))
-                {
-                    SetTargetingMode(false);
-
-                    if (turn.Phase == TurnPhase.SelectGuess)
-                    {
-                        guardChoiceView?.Show();
-                    }
-                    else
-                    {
-                        turn.StartTurn(game);
-                    }
-                    controller?.UpdateUI();
-                }
+                OnSelectTarget.Invoke(game.CurrentPlayer.id, targetId);
             };
         }
 
@@ -127,22 +98,7 @@ public class UIController : MonoBehaviour
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
             {
-                if (turn.Phase != TurnPhase.SelectTarget) return;
-
-                if (turn.TrySelectTarget(game, targetId, rules, resolver, out var error))
-                {
-                    SetTargetingMode(false);
-                    // Check if we need to show Guard choice
-                    if (turn.Phase == TurnPhase.SelectGuess)
-                    {
-                        guardChoiceView?.Show();
-                    }
-                    else
-                    {
-                        turn.StartTurn(game);
-                    }
-                    controller?.UpdateUI();
-                }
+                OnSelectTarget?.Invoke(game.CurrentPlayer.id, targetId);
             };
 
             // Hook opponent hand clicks if manual control enabled
@@ -150,20 +106,14 @@ public class UIController : MonoBehaviour
             {
                 oppView.handView.OnCardClicked += card =>
                 {
-                    if (!manualControlBots) return; // ignore if manual control disabled
-
-                    int botPlayerId = oppView.GetPlayerId();                    
+                    if (!manualControlBots) return;
+                    int botPlayerId = oppView.GetPlayerId();
                     if (game.CurrentPlayer.id != botPlayerId) return;
 
-                    if (turn.TryPlayCard(game, card, rules, resolver, out var error))
+                    int cardIndex = game.players[botPlayerId].hand.IndexOf(card);
+                    if (cardIndex >= 0)
                     {
-                        if (turn.Phase == TurnPhase.SelectTarget)
-                            SetTargetingMode(true);
-                        else
-                        {
-                            turn.StartTurn(game);
-                        }
-                        controller?.UpdateUI();
+                        OnPlayCard.Invoke(botPlayerId, cardIndex);
                     }
                 };
             }
@@ -171,7 +121,17 @@ public class UIController : MonoBehaviour
         }
     }
 
-    public void DisableTargetingMode()
+    public void ShowGuardChoice()
+    {
+        guardChoiceView.Show();
+    }
+
+    public void EnableTargeting()
+    {
+        SetTargetingMode(true);
+    }
+
+    public void DisableTargeting()
     {
         SetTargetingMode(false);
     }
@@ -204,7 +164,7 @@ public class UIController : MonoBehaviour
 
     public void RefreshAll()
     {
-        playerArea?.Refresh();
+        playerArea.Refresh();
         if (opponentAreas != null)
             foreach (var v in opponentAreas) v.Refresh();
     }
