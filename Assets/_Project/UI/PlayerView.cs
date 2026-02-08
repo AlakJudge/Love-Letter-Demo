@@ -5,16 +5,22 @@ using System;
 
 public class PlayerView : MonoBehaviour
 {
+    [Header("UI Elements")]
     public TextMeshProUGUI nameLabel;
+    public HandView handView;
+    public DiscardPileView discardPileView;
+    public Button targetButton;
+
+    [Header("Containers")]
     public Transform tokensContainer;
-    public GameObject tokenPrefab;
     public Transform statusContainer;
+
+    [Header("Prefabs")]
     public GameObject protectedStatusPrefab;
     public GameObject eliminatedStatusPrefab;
     public GameObject activeStatusPrefab;
-    public HandView handView;
-    public Button targetButton;
-
+    public GameObject tokenPrefab;
+    
     public event Action<int> OnTargetSelected;
 
     private PlayerState player;
@@ -25,7 +31,7 @@ public class PlayerView : MonoBehaviour
         if (targetButton != null)
         {
             buttonImage = targetButton.GetComponent<Image>();
-            targetButton.onClick.AddListener(() => OnTargetSelected?.Invoke(player.id));
+            targetButton.onClick.AddListener(() => OnTargetSelected.Invoke(player.id));
             targetButton.interactable = false;
 
             if (buttonImage != null)
@@ -55,8 +61,12 @@ public class PlayerView : MonoBehaviour
         
         RefreshTokens();
         RefreshStatus();
+        
+        // Discard pile (icons)
+        if (discardPileView != null)
+            discardPileView.UpdateDiscardPile(player);
 
-        handView?.ShowHand(player);      
+        handView.ShowHand(player);      
     }
 
     private void RefreshStatus()
@@ -89,7 +99,7 @@ public class PlayerView : MonoBehaviour
         {
             Instantiate(tokenPrefab, tokensContainer);
         }
-    }
+    }  
 
     public void SetName(string displayName) => nameLabel.text = displayName;
 }
