@@ -126,6 +126,11 @@ public class UIController : MonoBehaviour
         guardChoiceView.Show();
     }
 
+    public void HideGuardChoice()
+    {
+        guardChoiceView.Hide();
+    }
+
     public void EnableTargeting()
     {
         SetTargetingMode(true);
