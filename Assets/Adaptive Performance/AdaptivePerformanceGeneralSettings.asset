@@ -29,8 +29,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.AdaptivePerformance::UnityEngine.AdaptivePerformance.AdaptivePerformanceManagerSettings
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
-  m_Loaders:
-  - {fileID: 11400000, guid: 33b873c53cd09624781bd712dcefc491, type: 2}
+  m_Loaders: []
 --- !u!114 &5911799864746031221
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -44,4 +43,4 @@ MonoBehaviour:
   m_Name: Android Settings
   m_EditorClassIdentifier: Unity.AdaptivePerformance::UnityEngine.AdaptivePerformance.AdaptivePerformanceGeneralSettings
   m_LoaderManagerInstance: {fileID: 1212143273795599101}
-  m_InitManagerOnStart: 1
+  m_InitManagerOnStart: 0
