@@ -30,6 +30,9 @@ public class GameController : MonoBehaviour
     private TurnController turn;
     private RuleValidation rules;
 
+    private Coroutine botRoutine;
+
+
     // For future networking
     private bool isMultiplayer = false;
 
@@ -44,7 +47,11 @@ public class GameController : MonoBehaviour
     {
         // Build players
         var players = new List<PlayerState>();
-        for (int i = 0; i < playerCount; i++) players.Add(new PlayerState(i));
+        for (int i = 0; i < playerCount; i++) 
+        {
+            var player = new PlayerState(i, i == localPlayerId);
+            players.Add(player);
+        }
         Debug.Log($"Created {playerCount} players.");
 
         var deck = new List<CardData>(deckTemplate);
@@ -130,21 +137,47 @@ public class GameController : MonoBehaviour
         {
             UpdateUI();
         }
-        else
-        {
-            Debug.LogWarning($"Command failed: {error}");
-        }
     }
 
     private void OnTurnComplete()
     {
         ui.DisableTargeting();
+        ui.HideGuardChoice();
+        BeginTurnForCurrentPlayer();
+    }
+
+    private void BeginTurnForCurrentPlayer()
+    {
+        var currentPlayer = game.CurrentPlayer;
+
+        // If it's a bot (and not manually controlled), have it start its turn
+        if (!currentPlayer.isLocalPlayer && !manualControlBots)
+        {
+            if (botRoutine != null) StopCoroutine(botRoutine);
+            botRoutine = StartCoroutine(RunBotTurn());
+        }
         turn.StartTurn(game);
         UpdateUI();
     }
 
+    private System.Collections.IEnumerator RunBotTurn()
+    {
+        yield return new WaitForSeconds(1.5f);
+
+        var botCommands = BotController.GetTurnCommands(game, game.CurrentPlayer.id, rules);
+
+        foreach (var cmd in botCommands)
+        {
+            ExecuteCommand(cmd);
+            yield return new WaitForSeconds(2f);
+        }
+
+        botRoutine = null;
+    }
+
     private void OnRoundOver(PlayerState winner)
     {
+        ui.HideGuardChoice();
         UpdateUI();
 
         if (transitionView != null)
@@ -208,7 +241,6 @@ public class GameController : MonoBehaviour
                 player.hand.Add(game.deck.Pop());
         }
 
-
         game.currentPlayerIndex = Random.Range(0, playerCount); // Random starting player
         game.turnNumber = 1;
 
@@ -217,7 +249,7 @@ public class GameController : MonoBehaviour
         TurnLogger.Instance?.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first.", 1);
 
         // Start first turn
-        turn.StartTurn(game);
+        BeginTurnForCurrentPlayer();
         // Avoid potential targeting issues if last turn in previous round was a targeting effect
         ui.DisableTargeting();
         UpdateUI();
