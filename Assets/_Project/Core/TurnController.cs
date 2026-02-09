@@ -68,7 +68,8 @@ public class TurnController
         
         var card = game.CurrentPlayer.hand[cmd.cardIndex];
 
-        if (!rules.CanPlay(game, card, out error)) return false;
+
+        if (!rules.HasCountessRule(game, card, out error)) return false;
         
         pendingCardIndex = cmd.cardIndex;  
         turnLogger.Log($"Player {game.CurrentPlayer.id + 1} played {card.type}.", game.turnNumber);
