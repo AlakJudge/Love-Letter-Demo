@@ -17,4 +17,5 @@ MonoBehaviour:
   effect: {fileID: 11400000, guid: ffba5be4b66d6e046869d681396f333a, type: 2}
   cardBack: {fileID: -5044639396517056953, guid: eaf25b09f3e279243af9a4f71186c437, type: 3}
   cardFront: {fileID: 8426817888908902439, guid: b40dcf1689a9c6948af090fe5f41b16c, type: 3}
+  discardedIcon: {fileID: -855298285791758126, guid: 607199ce92dfecb4c9496dfd28cc7f89, type: 3}
   uiPrefab: {fileID: 3878465382411716493, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}

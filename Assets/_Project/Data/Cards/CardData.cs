@@ -14,6 +14,7 @@ public class CardData : ScriptableObject
     [Header("Visual Assets")]
     public Sprite cardBack;
     public Sprite cardFront;
+    public Sprite discardedIcon;
     public GameObject uiPrefab;
 
     private void OnValidate()
