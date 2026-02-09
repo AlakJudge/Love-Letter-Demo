@@ -5,15 +5,21 @@ using System;
 
 public class OpponentView : MonoBehaviour
 {
+    [Header("UI Elements")]
     public TextMeshProUGUI nameLabel;
+    public HandView handView;
+    public DiscardPileView discardPileView;
+    public Button targetButton;
+
+    [Header("Containers")]
     public Transform tokensContainer;
-    public GameObject tokenPrefab;
     public Transform statusContainer;
+
+    [Header("Prefabs")]
     public GameObject protectedStatusPrefab;
     public GameObject eliminatedStatusPrefab;
     public GameObject activeStatusPrefab;
-    public HandView handView;
-    public Button targetButton;
+    public GameObject tokenPrefab;
 
     public event Action<int> OnTargetSelected;
     
@@ -59,6 +65,10 @@ public class OpponentView : MonoBehaviour
         
         RefreshTokens();
         RefreshStatus();
+
+        // Discard pile (icons)
+        if (discardPileView != null)
+            discardPileView.UpdateDiscardPile(player);
         
         if (showHand)
             handView?.ShowHand(player); // for debugging

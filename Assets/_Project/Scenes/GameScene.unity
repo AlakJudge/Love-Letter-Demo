@@ -381,8 +381,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -512,14 +512,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4769185991176531113, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6267874394399837597, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7553045836493231055, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
-      propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8152036017674375652, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
@@ -1259,7 +1251,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 49.179504}
+  m_AnchoredPosition: {x: 0, y: 49.179443}
   m_SizeDelta: {x: 250, y: 85}
   m_Pivot: {x: -0.5, y: -1.5}
 --- !u!114 &527715380
@@ -1475,7 +1467,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &725715814
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1509,7 +1501,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.92156863}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2098,10 +2090,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1642300419}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 67, y: -28.5}
-  m_SizeDelta: {x: 134, y: 57}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1261696630
 MonoBehaviour:
@@ -2150,10 +2142,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 31.33
+  m_fontSize: 24.95
   m_fontSizeBase: 31.33
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -2188,7 +2180,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 5, y: 5, z: 5, w: 5}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2506,14 +2498,6 @@ PrefabInstance:
     - target: {fileID: 424187399272388419, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
       propertyPath: m_Name
       value: OpponentAreaView
-      objectReference: {fileID: 0}
-    - target: {fileID: 2041689987661148171, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5797604127322653575, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7483044321087497550, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
       propertyPath: m_Pivot.x
@@ -2957,8 +2941,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 67.0644, y: -28.588943}
-  m_SizeDelta: {x: 134.1288, y: 57.177887}
+  m_AnchoredPosition: {x: 51.80844, y: -22.08545}
+  m_SizeDelta: {x: 100, y: 40}
   m_Pivot: {x: 0.5, y: -0.5}
 --- !u!114 &1642300420
 MonoBehaviour:
@@ -3311,7 +3295,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 16f5a8f9b16fbf147bb3148c81dc0066, type: 2}
   playerNames: []
   showOpponentHands: 1
-  manualControlBots: 1
+  manualControlBots: 0
   playersList: {fileID: 338817739}
   playerManagerPrefab: {fileID: 8610008582542162623, guid: 23c8df5373a48994cb899b98ebbd8ed6, type: 3}
   ui: {fileID: 1444870929}
