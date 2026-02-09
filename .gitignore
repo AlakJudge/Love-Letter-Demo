@@ -75,3 +75,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /Assets/500FreeSkillIcons/Demo
 Assets/500FreeSkillIcons/Demo.meta
+/APK/Love Letter Demo_BackUpThisFolder_ButDontShipItWithYourGame/il2cppOutput
+/APK/Love Letter Demo_BackUpThisFolder_ButDontShipItWithYourGame
+/APK/Love Letter_BurstDebugInformation_DoNotShip
