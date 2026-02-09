@@ -4,14 +4,19 @@ using UnityEngine;
 public class PlayerState
 {
     public readonly int id;
+    public bool isLocalPlayer;
     public readonly List<CardData> hand = new();
     public readonly List<CardData> discardPile = new();
-    public readonly HashSet<CardData> revealedCards = new();
+    public readonly List<CardData> revealedCards = new();
     public bool isProtected;
     public bool isEliminated;
     public int tokens;
 
-    public PlayerState(int id) { this.id = id; }
+    public PlayerState(int id, bool isLocal = false) 
+    { 
+        this.id = id; 
+        this.isLocalPlayer = isLocal;
+    }
 
     public void DrawCard(Stack<CardData> deck)
     {
