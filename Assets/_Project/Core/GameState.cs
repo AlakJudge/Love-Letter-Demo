@@ -8,6 +8,7 @@ public class GameState
     public readonly List<CardData> discard = new();
     public int currentPlayerIndex;
     public int turnNumber;
+    public CardData removedCard;
 
     public PlayerState CurrentPlayer => players[currentPlayerIndex];
 
@@ -35,5 +36,12 @@ public class GameState
         if (currentPlayerIndex == 0)
             turnNumber++;
             Debug.Log("Turn number: " + turnNumber);
+    }
+
+    public void SetAsideCard(CardData card)
+    {
+        // This can be used for Prince effect to set aside a card when deck is empty
+        // and retrieve it later when needed
+        removedCard = card;
     }
 }
