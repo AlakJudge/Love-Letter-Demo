@@ -22,6 +22,15 @@ public class PrinceEffect : CardEffect
         }
         else
         {
+            if (game.deck.Count == 0)
+            {
+                Debug.Log($"Player {target.id + 1} discarded {discardedCard.type}. But the deck is empty, drawing removed card.");
+                TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type}. But the deck is empty, drawing removed card.", game.turnNumber);
+                
+                target.hand.Add(game.removedCard);
+                game.removedCard = null;
+                return;
+            }
             target.DrawCard(game.deck);
             Debug.Log($"Player {target.id + 1} discarded {discardedCard.type} and drew a new card.");
             TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type} and drew a new card.", game.turnNumber);

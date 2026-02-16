@@ -33,6 +33,10 @@ public class GuardEffect : CardEffect
         {
             // Correct guess - eliminate target
             target.isEliminated = true;
+            // Move card from hand to discard pile
+            target.hand.Remove(targetCard);
+            target.discardPile.Add(targetCard);
+            target.revealedCards.Clear();
             Debug.Log($"Player {source.id + 1} guessed correctly! Player {target.id + 1} had {guessedCardType} and is eliminated!");
             TurnLogger.Instance.Log($"Player {source.id + 1} guessed correctly! Player {target.id + 1} had {guessedCardType} and is eliminated!", game.turnNumber);
         }

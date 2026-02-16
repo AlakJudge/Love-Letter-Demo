@@ -15,12 +15,20 @@ public class BaronEffect : CardEffect
         }
         else if (sourceCard.cardValue > targetCard.cardValue)
         {
+            // Discard target's hand and mark as eliminated
+            target.hand.Remove(targetCard);
+            target.revealedCards.Clear();
+            target.discardPile.Add(targetCard);
             target.isEliminated = true;
             Debug.Log($"Player {target.id + 1}'s card value is lower and they're eliminated!");
             TurnLogger.Instance.Log($"Player {target.id + 1}'s card value is lower and they're eliminated!", game.turnNumber);
         }
         else if (sourceCard.cardValue < targetCard.cardValue)
         {
+            // Discard owner's hand and mark as eliminated
+            source.hand.Remove(sourceCard);
+            source.revealedCards.Clear();
+            source.discardPile.Add(sourceCard);
             source.isEliminated = true;
             Debug.Log($"Player {source.id + 1}'s card value is lower and they're eliminated!");
             TurnLogger.Instance.Log($"Player {source.id + 1}'s card value is lower and they're eliminated!", game.turnNumber);
