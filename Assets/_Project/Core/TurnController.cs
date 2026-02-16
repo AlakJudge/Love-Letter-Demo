@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum TurnPhase { StartTurn, Draw, ChooseCard, SelectTarget, SelectGuess, ResolveEffect, CheckOutcome, EndTurn, EndRound, GameOver }
@@ -41,6 +42,54 @@ public class TurnController
         }
     }
 
+    public void StartNewRound(GameState game, List<CardData> deckTemplate)
+    {
+        // Reset player states
+        foreach (var player in game.players)
+        {
+            player.hand.Clear();
+            player.discardPile.Clear();
+            player.revealedCards.Clear();
+            player.isProtected = false;
+            player.isEliminated = false;
+            // Tokens persist across rounds
+        }
+        // Reset turn controller state
+        pendingCardIndex = -1;
+        pendingTargetId = -1;
+
+        // Rebuild and shuffle deck
+        game.deck.Clear();
+        var newDeck = new List<CardData>(deckTemplate);
+        for (int i = newDeck.Count - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
+        }
+        foreach (var card in newDeck)
+            game.deck.Push(card);
+        
+        game.SetAsideCard(game.deck.Pop()); // Set one card aside to use for prince effect, if necessary
+        
+        Debug.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed card: {game.removedCard.type}");
+        TurnLogger.Instance.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed card: {game.removedCard.type}", 1);
+
+        // Deal initial hands
+        foreach (var player in game.players)
+        {
+            if (game.deck.Count > 0)
+                player.hand.Add(game.deck.Pop());
+        }
+
+        // Pick random starting player and reset turn number
+        game.currentPlayerIndex = UnityEngine.Random.Range(0, game.players.Count);
+        game.turnNumber = 1;
+
+        // Clear log and start logging
+        TurnLogger.Instance.Clear();
+        TurnLogger.Instance.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first.", 1);
+    }
+
     public void StartTurn(GameState game)
     {
         Phase = TurnPhase.StartTurn;
@@ -78,7 +127,7 @@ public class TurnController
         if (CardNeedsTarget(card.type))
         {
             Phase = TurnPhase.SelectTarget;
-            OnNeedTargetSelection?.Invoke();
+            OnNeedTargetSelection.Invoke();
             return true;
         }
         // No target needed, resolve immediately

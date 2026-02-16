@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
@@ -7,6 +8,12 @@ public class UIController : MonoBehaviour
     public Transform currentPlayerContainer;
     public Transform opponentsContainer;
     public GameObject guardChoiceContainer;
+    
+    
+    [Header("Other UI Elements")]
+    public TransitionView transitionView;
+    public Button rematchButton;
+    public Button quitButton;
 
     [Header("Prefabs")]
     public PlayerView playerAreaPrefab;
@@ -17,6 +24,8 @@ public class UIController : MonoBehaviour
     public bool showOpponentHands = false; // set by GameController
     public bool manualControlBots = false; // set by GameController
 
+    public PlayerManager[] playerManagers;
+
     private GameState game;
     private PlayerView playerArea;
     private OpponentView[] opponentAreas;
@@ -26,6 +35,18 @@ public class UIController : MonoBehaviour
     public event Action<int, int> OnPlayCard;        // playerId, cardIndex
     public event Action<int, int> OnSelectTarget;    // playerId, targetId
     public event Action<int, int> OnSelectGuess;     // playerId, guess
+    public event Action OnRoundContinueClicked;
+    public event Action OnRematchClicked;
+    public event Action OnQuitClicked;
+    
+    private void Awake()
+    {
+        if (rematchButton != null)
+            rematchButton.onClick.AddListener(() => OnRematchClicked.Invoke());
+
+        if (quitButton != null)
+            quitButton.onClick.AddListener(() => OnQuitClicked.Invoke());
+    }
 
     public void Bind(GameState game)
     {
@@ -35,6 +56,9 @@ public class UIController : MonoBehaviour
         if (guardChoiceContainer != null)
         {
             guardChoiceView = guardChoiceContainer.GetComponent<GuardChoiceView>();
+            if (guardChoiceView == null)
+                Debug.LogError("GuardChoiceContainer does not have a GuardChoiceView component.");
+
             guardChoiceView.gameObject.SetActive(false);
 
             if (guardChoiceView != null)
@@ -42,7 +66,7 @@ public class UIController : MonoBehaviour
                 // When guessed card is selected, run rest of the turn normally.
                 guardChoiceView.OnGuessSelected += guessValue => 
                 {
-                    OnSelectGuess?.Invoke(game.CurrentPlayer.id, guessValue);
+                    OnSelectGuess.Invoke(game.CurrentPlayer.id, guessValue);
                     guardChoiceView.gameObject.SetActive(false);
                 };
             }
@@ -98,7 +122,7 @@ public class UIController : MonoBehaviour
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
             {
-                OnSelectTarget?.Invoke(game.CurrentPlayer.id, targetId);
+                OnSelectTarget.Invoke(game.CurrentPlayer.id, targetId);
             };
 
             // Hook opponent hand clicks if manual control enabled
@@ -119,6 +143,48 @@ public class UIController : MonoBehaviour
             }
             opponentAreas[idx++] = oppView;
         }
+    }
+
+    public void HandleRoundWin(PlayerState winner)
+    {
+        HideGuardChoice();
+        DisableTargeting();
+        RefreshAll();
+
+        if (transitionView != null)
+        {
+            // Ensure we don't stack multiple handlers across rounds
+            transitionView.OnTransitionFinished -= HandleRoundTransitionFinished;
+            transitionView.OnTransitionFinished += HandleRoundTransitionFinished;
+
+            transitionView.ShowTransition(
+                $"Player {winner.id + 1} wins the round!\n\nGet ready for the next round...",
+                "RoundOver"
+            );
+        }
+    }
+    
+    private void HandleRoundTransitionFinished()
+    {
+        OnRoundContinueClicked.Invoke();
+    }
+
+    public void HandleGameWin(PlayerState winner)
+    {
+        HideGuardChoice();
+        DisableTargeting();
+        RefreshAll();
+
+        if (transitionView != null)
+        {
+            transitionView.ShowTransition(
+                $"Player {winner.id + 1} wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
+                "GameOver"
+            );
+        }
+
+        if (rematchButton != null) rematchButton.gameObject.SetActive(true);
+        if (quitButton != null) quitButton.gameObject.SetActive(true);
     }
 
     public void ShowGuardChoice()
@@ -172,6 +238,10 @@ public class UIController : MonoBehaviour
         playerArea.Refresh();
         if (opponentAreas != null)
             foreach (var v in opponentAreas) v.Refresh();
+        
+        if (playerManagers != null) // Sync player manager displays
+            foreach (var pm in playerManagers) 
+                pm.Sync();
     }
 
     public void SetDisplayName(int playerIndex, string name)

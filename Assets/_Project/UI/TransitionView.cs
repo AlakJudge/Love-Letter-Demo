@@ -36,7 +36,7 @@ public class TransitionView : MonoBehaviour
         if (transitionPanel != null)
             transitionPanel.gameObject.SetActive(false);
         
-        OnTransitionFinished?.Invoke();
+        OnTransitionFinished.Invoke();
     }
 
     private System.Collections.IEnumerator HideAfterDelay()

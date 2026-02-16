@@ -32,7 +32,6 @@ public class GameController : MonoBehaviour
 
     private Coroutine botRoutine;
 
-
     // For future networking
     private bool isMultiplayer = false;
 
@@ -66,9 +65,17 @@ public class GameController : MonoBehaviour
         turn.OnRoundWin += OnRoundOver;
         turn.OnGameWin += OnGameOver;
 
+        // When UI says “continue”, actually start the next round
+        ui.OnRoundContinueClicked += () => StartNewRound();
+
+        ui.OnRematchClicked += () => RestartGame();
+        ui.OnQuitClicked += () => QuitToMenu();
+
         BuildPlayerObjects();
+        ui.playerManagers = playerManagers;
     }
 
+    // Wiring of game state to UI and input
     private void SetupUI()
     {
         ui.localPlayerId = localPlayerId;
@@ -135,7 +142,7 @@ public class GameController : MonoBehaviour
     {
         if (turn.ExecuteCommand(game, cmd, rules, out string error))
         {
-            UpdateUI();
+            ui.RefreshAll();
         }
     }
 
@@ -148,6 +155,9 @@ public class GameController : MonoBehaviour
 
     private void BeginTurnForCurrentPlayer()
     {
+        turn.StartTurn(game);
+        ui.RefreshAll();
+
         var currentPlayer = game.CurrentPlayer;
 
         // If it's a bot (and not manually controlled), have it start its turn
@@ -156,8 +166,6 @@ public class GameController : MonoBehaviour
             if (botRoutine != null) StopCoroutine(botRoutine);
             botRoutine = StartCoroutine(RunBotTurn());
         }
-        turn.StartTurn(game);
-        UpdateUI();
     }
 
     private System.Collections.IEnumerator RunBotTurn()
@@ -177,82 +185,20 @@ public class GameController : MonoBehaviour
 
     private void OnRoundOver(PlayerState winner)
     {
-        ui.HideGuardChoice();
-        UpdateUI();
-
-        if (transitionView != null)
-        {
-            transitionView.OnTransitionFinished -= StartNewRound;
-            transitionView.OnTransitionFinished += StartNewRound;
-            transitionView.ShowTransition(
-                $"Player {winner.id + 1} wins the round!\n\nGet ready for the next round...",
-                roundOrGameOver: "RoundOver"
-            );
-        }
+        ui.HandleRoundWin(winner);
     }
 
     private void OnGameOver(PlayerState winner)
     {
-        UpdateUI();
-
-        if (transitionView != null)
-        {
-            transitionView.ShowTransition(
-                $"Player {winner.id + 1} wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
-                roundOrGameOver: "GameOver"
-            );
-        }
-
-        if (rematchButton != null) rematchButton.gameObject.SetActive(true);
-        if (quitButton != null) quitButton.gameObject.SetActive(true);
+        ui.HandleGameWin(winner);
     }
 
     public void StartNewRound()
     {
-        // Reset player states
-        foreach (var player in game.players)
-        {
-            player.hand.Clear();
-            player.discardPile.Clear();
-            player.revealedCards.Clear();
-            player.isProtected = false;
-            player.isEliminated = false;
-            // Tokens persist across rounds
-        }
-        // Reset turn controller state
-        turn.pendingCardIndex = -1;
-        turn.pendingTargetId = -1;
-
-        // Rebuild and shuffle deck
-        game.deck.Clear();
-        var newDeck = new List<CardData>(deckTemplate);
-        Shuffle(newDeck);
-        foreach (var card in newDeck)
-            game.deck.Push(card);
-
-        // Leave one card face down out of the game
-        CardData removedCard = game.deck.Pop();
-        Debug.Log($"Removed card: {removedCard.type}");
-
-        // Deal initial hands
-        foreach (var player in game.players)
-        {
-            if (game.deck.Count > 0)
-                player.hand.Add(game.deck.Pop());
-        }
-
-        game.currentPlayerIndex = Random.Range(0, playerCount); // Random starting player
-        game.turnNumber = 1;
-
-        // Clear log and start logging
-        TurnLogger.Instance?.Clear();
-        TurnLogger.Instance?.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first.", 1);
-
+        turn.StartNewRound(game, deckTemplate);
+        
         // Start first turn
         BeginTurnForCurrentPlayer();
-        // Avoid potential targeting issues if last turn in previous round was a targeting effect
-        ui.DisableTargeting();
-        UpdateUI();
     }
 
     private void BuildPlayerObjects()
@@ -277,22 +223,6 @@ public class GameController : MonoBehaviour
                 ? playerNames[i] : $"Player {i + 1}";
             obj.Bind(game.players[i], name);
             playerManagers[i] = obj;
-        }
-    }
-
-    public void UpdateUI()
-    {
-        ui.RefreshAll();
-        if (playerManagers != null) // Sync player manager displays
-            foreach (var pm in playerManagers) pm?.Sync();
-    }
-
-    private void Shuffle(List<CardData> list)
-    {
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
         }
     }
 
