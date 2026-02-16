@@ -2616,11 +2616,15 @@ MonoBehaviour:
   currentPlayerContainer: {fileID: 22559072}
   opponentsContainer: {fileID: 1673466414}
   guardChoiceContainer: {fileID: 955132509}
+  transitionView: {fileID: 1337053749}
+  rematchButton: {fileID: 208013958}
+  quitButton: {fileID: 254036988}
   playerAreaPrefab: {fileID: 7441681834857655791, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
   opponentAreaPrefab: {fileID: 4350909882609627610, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
   localPlayerId: 0
   showOpponentHands: 0
   manualControlBots: 0
+  playerManagers: []
 --- !u!4 &1444870930
 Transform:
   m_ObjectHideFlags: 0
