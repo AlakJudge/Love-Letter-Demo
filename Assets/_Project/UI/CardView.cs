@@ -1,25 +1,69 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class CardView : MonoBehaviour
+public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public Image image;
-    public TMPro.TextMeshProUGUI label;
     public Button button;
-
+    public bool isRevealed = false;
+    
     public Action onClick;
+    public Action onLongPress;
+    public Action onLongPressRelease;
+
+    [SerializeField] private float longPressTime = 0.4f;
+
+    private bool isPointerDown;
+    private bool longPressTriggered;
+    private float pointerDownTime;
 
     public void Set(CardData card)
     {
         image.sprite = card.cardFront;
+        isRevealed = true;
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() => onClick?.Invoke());
+        button.onClick.AddListener(HandleClick);
     }
     public void ShowBack(CardData card)
     {
         image.sprite = card.cardBack;
+        isRevealed = false;
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() => onClick?.Invoke());
+        button.onClick.AddListener(HandleClick);
+    }
+
+    private void HandleClick()
+    {
+        if (!longPressTriggered)
+            onClick?.Invoke();
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        isPointerDown = true;
+        longPressTriggered = false;
+        pointerDownTime = Time.unscaledTime;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        isPointerDown = false;
+        if (longPressTriggered)
+            onLongPressRelease?.Invoke();
+        longPressTriggered = false;
+    }
+
+    private void Update()
+    {
+        if (!isPointerDown || longPressTriggered)
+            return;
+
+        if (Time.unscaledTime - pointerDownTime >= longPressTime)
+        {
+            longPressTriggered = true;
+            onLongPress?.Invoke();
+        }
     }
 }
