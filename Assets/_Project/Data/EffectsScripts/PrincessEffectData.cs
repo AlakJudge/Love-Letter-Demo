@@ -7,8 +7,7 @@ public class PrincessEffect : CardEffect
     {
         // Player who plays Princess is eliminated
         source.isEliminated = true;
-        // Send both cards to discard pile
-        source.discardPile.Add(source.hand[1]);
+        // Send other card to discard pile too
         source.discardPile.Add(source.hand[0]);
         source.hand.Clear();
         source.revealedCards.Clear();
