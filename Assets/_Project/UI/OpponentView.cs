@@ -25,7 +25,7 @@ public class OpponentView : MonoBehaviour
     
     private PlayerState player;
     private bool showHand;
-    private Image buttonImage; 
+    private Image buttonImage;
 
     private void Awake()
     {
@@ -69,11 +69,6 @@ public class OpponentView : MonoBehaviour
         // Discard pile (icons)
         if (discardPileView != null)
             discardPileView.UpdateDiscardPile(player);
-        
-        if (showHand)
-            handView?.ShowHand(player); // for debugging
-        else
-            handView?.ShowCardBack(player); // shows revealed cards as front, others as back
     }
 
     private void RefreshStatus()
@@ -106,7 +101,7 @@ public class OpponentView : MonoBehaviour
         {
             Instantiate(tokenPrefab, tokensContainer);
         }
-    }
+    }    
 
     public void SetName(string displayName) => nameLabel.text = displayName;
 }
