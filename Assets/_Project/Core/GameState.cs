@@ -1,6 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class SpyRevealInfo
+{
+    public int sourcePlayerId;
+    public int targetPlayerId;
+    public int handIndex;
+}
+
 public class GameState
 {
     public readonly List<PlayerState> players = new();
@@ -9,6 +16,8 @@ public class GameState
     public int currentPlayerIndex;
     public int turnNumber;
     public CardData removedCard;
+
+    public readonly List<SpyRevealInfo> spyReveals = new();
 
     public PlayerState CurrentPlayer => players[currentPlayerIndex];
 
@@ -20,9 +29,27 @@ public class GameState
         turnNumber = 1;
     }
 
+    public void ClearSpyReveals()
+    {
+        spyReveals.Clear();
+    }
+
+    public void ClearSpyRevealsForPlayer(int targetPlayerId)
+    {
+        spyReveals.RemoveAll(r => r.targetPlayerId == targetPlayerId);
+    }
+
+    public IEnumerable<int> GetRevealedHandIndicesForSpyPlayer(int observerId, int targetId)
+    {
+        foreach (var r in spyReveals)
+        {
+            if (r.sourcePlayerId == observerId && r.targetPlayerId == targetId)
+                yield return r.handIndex;
+        }
+    }
+
     public void AdvanceToNextPlayer()
     {
-
         int start = currentPlayerIndex;
         do
         {
