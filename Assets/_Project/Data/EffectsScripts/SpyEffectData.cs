@@ -11,10 +11,23 @@ public class SpyEffect : CardEffect
             Debug.Log("No valid targets for Spy. No effect.");
             return;
         }
-        // Reveal target's hand
-        var revealedCard = target.hand[0]; // reveal the only card in hand
-        target.revealedCards.Add(revealedCard);
-        Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {target.hand[0].type}");
-        TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand.", game.turnNumber);
+
+        var revealedCard = target.hand[0];
+
+        // Remove any previous reveal this source had about this target (keep latest only)
+        game.spyReveals.RemoveAll(r =>
+            r.sourcePlayerId == source.id &&
+            r.targetPlayerId == target.id
+        );
+
+        game.spyReveals.Add(new SpyRevealInfo
+        {
+            sourcePlayerId = source.id,
+            targetPlayerId = target.id,
+            handIndex = 0
+        });
+
+        Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}");
+        TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}", game.turnNumber);
     }
 }
