@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ public class UIController : MonoBehaviour
     
     [Header("Other UI Elements")]
     public TransitionView transitionView;
+    public CardZoomView cardZoomView;
     public Button rematchButton;
     public Button quitButton;
 
@@ -42,10 +44,10 @@ public class UIController : MonoBehaviour
     private void Awake()
     {
         if (rematchButton != null)
-            rematchButton.onClick.AddListener(() => OnRematchClicked.Invoke());
+            rematchButton.onClick.AddListener(() => OnRematchClicked?.Invoke());
 
         if (quitButton != null)
-            quitButton.onClick.AddListener(() => OnQuitClicked.Invoke());
+            quitButton.onClick.AddListener(() => OnQuitClicked?.Invoke());
     }
 
     public void Bind(GameState game)
@@ -66,7 +68,7 @@ public class UIController : MonoBehaviour
                 // When guessed card is selected, run rest of the turn normally.
                 guardChoiceView.OnGuessSelected += guessValue => 
                 {
-                    OnSelectGuess.Invoke(game.CurrentPlayer.id, guessValue);
+                    OnSelectGuess?.Invoke(game.CurrentPlayer.id, guessValue);
                     guardChoiceView.gameObject.SetActive(false);
                 };
             }
@@ -85,7 +87,7 @@ public class UIController : MonoBehaviour
         playerArea = Instantiate(playerAreaPrefab, currentPlayerContainer);
         playerArea.Bind(game.players[localPlayerId], $"Player {localPlayerId + 1}");
 
-        // Hook card clicks to play command
+        // Hook card interactions to views and convert to events
         if (playerArea.handView != null)
         {
             playerArea.handView.OnCardClicked += card =>
@@ -95,8 +97,17 @@ public class UIController : MonoBehaviour
                 int cardIndex = game.CurrentPlayer.hand.IndexOf(card);
                 if (cardIndex >= 0)
                 {
-                    OnPlayCard.Invoke(game.CurrentPlayer.id, cardIndex);
+                    OnPlayCard?.Invoke(game.CurrentPlayer.id, cardIndex);
                 }
+            };
+
+            playerArea.handView.OnCardLongPressed += card =>
+            {
+                if (cardZoomView != null) cardZoomView.Show(card);
+            };
+            playerArea.handView.OnCardReleased += card =>
+            {
+                if (cardZoomView != null) cardZoomView.Hide();                
             };
         }
         // Hook up local player as target (for debugging)
@@ -104,7 +115,7 @@ public class UIController : MonoBehaviour
         {
             playerArea.OnTargetSelected += targetId =>
             {
-                OnSelectTarget.Invoke(game.CurrentPlayer.id, targetId);
+                OnSelectTarget?.Invoke(game.CurrentPlayer.id, targetId);
             };
         }
 
@@ -122,7 +133,7 @@ public class UIController : MonoBehaviour
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
             {
-                OnSelectTarget.Invoke(game.CurrentPlayer.id, targetId);
+                OnSelectTarget?.Invoke(game.CurrentPlayer.id, targetId);
             };
 
             // Hook opponent hand clicks if manual control enabled
@@ -137,10 +148,22 @@ public class UIController : MonoBehaviour
                     int cardIndex = game.players[botPlayerId].hand.IndexOf(card);
                     if (cardIndex >= 0)
                     {
-                        OnPlayCard.Invoke(botPlayerId, cardIndex);
+                        OnPlayCard?.Invoke(botPlayerId, cardIndex);
                     }
                 };
             }
+            // Hook card long press and release events
+            oppView.handView.OnCardLongPressed += card =>
+            {
+                Debug.Log("long press");
+                if (cardZoomView != null) cardZoomView.Show(card);
+                else Debug.Log("card zoom view null");
+            };
+            oppView.handView.OnCardReleased += card =>
+            {
+                if (cardZoomView != null) cardZoomView.Hide();                
+            };
+
             opponentAreas[idx++] = oppView;
         }
     }
@@ -166,7 +189,7 @@ public class UIController : MonoBehaviour
     
     private void HandleRoundTransitionFinished()
     {
-        OnRoundContinueClicked.Invoke();
+        OnRoundContinueClicked?.Invoke();
     }
 
     public void HandleGameWin(PlayerState winner)
@@ -232,9 +255,33 @@ public class UIController : MonoBehaviour
         for (int i = t.childCount - 1; i >= 0; i--)
             Destroy(t.GetChild(i).gameObject);
     }
+    
+    private void RefreshOpponents()
+    {
+        for (int i = 0; i < opponentAreas.Length; i++)
+        {
+            var oppView = opponentAreas[i];
+            var oppState = game.players[oppView.GetPlayerId()];
+
+            if (oppView.handView != null)
+            {
+                if (showOpponentHands)
+                    oppView.handView.ShowHand(oppState);
+                else
+                {
+                    //oppView.handView.ShowCardBack(oppState);
+                    var revealedIndices = new HashSet<int>(
+                        game.GetRevealedHandIndicesForSpyPlayer(localPlayerId, oppState.id)
+                    );
+                    oppView.handView.ShowCardBack(oppState, revealedIndices);
+                }
+            }
+        }
+    }
 
     public void RefreshAll()
     {
+        RefreshOpponents();
         playerArea.Refresh();
         if (opponentAreas != null)
             foreach (var v in opponentAreas) v.Refresh();
