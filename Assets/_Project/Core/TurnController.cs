@@ -54,6 +54,9 @@ public class TurnController
             player.isEliminated = false;
             // Tokens persist across rounds
         }
+
+        game.ClearSpyReveals();
+        
         // Reset turn controller state
         pendingCardIndex = -1;
         pendingTargetId = -1;
@@ -72,7 +75,7 @@ public class TurnController
         game.SetAsideCard(game.deck.Pop()); // Set one card aside to use for prince effect, if necessary
         
         Debug.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed card: {game.removedCard.type}");
-        TurnLogger.Instance.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed card: {game.removedCard.type}", 1);
+        TurnLogger.Instance.Log($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed a card and set it aside face down.", 1);
 
         // Deal initial hands
         foreach (var player in game.players)
@@ -212,6 +215,9 @@ public class TurnController
         Phase = TurnPhase.ResolveEffect;
         var resolver = new EffectResolver();
         resolver.Resolve(game, fullCmd, card);
+
+        // Once player has played a card, preivous spy knowledge is gone.
+        game.ClearSpyRevealsForPlayer(game.CurrentPlayer.id);
 
         Phase = TurnPhase.CheckOutcome;
 
