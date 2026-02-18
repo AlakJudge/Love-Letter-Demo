@@ -14,8 +14,12 @@ public class UIController : MonoBehaviour
     [Header("Other UI Elements")]
     public TransitionView transitionView;
     public CardZoomView cardZoomView;
+    public DiscardPileZoomView discardPileZoomView;
+    public Button discardPileZoomExitButton;
+    public Button discardPileExpandButtonOpponents;
     public Button rematchButton;
     public Button quitButton;
+
 
     [Header("Prefabs")]
     public PlayerView playerAreaPrefab;
@@ -40,6 +44,9 @@ public class UIController : MonoBehaviour
     public event Action OnRoundContinueClicked;
     public event Action OnRematchClicked;
     public event Action OnQuitClicked;
+
+    private PlayerView playerView;
+    private OpponentView opponentView;
     
     private void Awake()
     {
@@ -48,6 +55,10 @@ public class UIController : MonoBehaviour
 
         if (quitButton != null)
             quitButton.onClick.AddListener(() => OnQuitClicked?.Invoke());
+
+        // Close discard pile zoom when full-screen button is clicked
+        if (discardPileZoomExitButton != null)
+            discardPileZoomExitButton.onClick.AddListener(HideDiscardPile);
     }
 
     public void Bind(GameState game)
@@ -118,6 +129,15 @@ public class UIController : MonoBehaviour
                 OnSelectTarget?.Invoke(game.CurrentPlayer.id, targetId);
             };
         }
+        // When discard pile is expanded, show the exit overlay button
+        playerArea.OnDiscardPileExpanded += () =>
+        {
+            if (discardPileZoomExitButton != null)
+                discardPileZoomExitButton.gameObject.SetActive(true);
+            
+            if (discardPileZoomView != null)
+                discardPileZoomView.Show(game.players[localPlayerId]);
+        };
 
         // OPPONENTS
         int oppCount = game.players.Count - 1;
@@ -164,6 +184,16 @@ public class UIController : MonoBehaviour
                 if (cardZoomView != null) cardZoomView.Hide();                
             };
 
+            // When opponent discard is expanded, show the same exit overlay
+            oppView.OnDiscardPileExpanded += () =>
+            {
+                if (discardPileZoomExitButton != null)
+                    discardPileZoomExitButton.gameObject.SetActive(true);
+            
+                if (discardPileZoomView != null)
+                    discardPileZoomView.Show(game.players[oppView.GetPlayerId()]);
+            };
+
             opponentAreas[idx++] = oppView;
         }
     }
@@ -208,6 +238,15 @@ public class UIController : MonoBehaviour
 
         if (rematchButton != null) rematchButton.gameObject.SetActive(true);
         if (quitButton != null) quitButton.gameObject.SetActive(true);
+    }
+
+    public void HideDiscardPile()
+    {
+        if (discardPileZoomExitButton != null)
+            discardPileZoomExitButton.gameObject.SetActive(false);
+
+        if (discardPileZoomView != null)
+            discardPileZoomView.Hide();
     }
 
     public void ShowGuardChoice()
