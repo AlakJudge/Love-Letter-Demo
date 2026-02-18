@@ -9,7 +9,9 @@ public class PlayerView : MonoBehaviour
     public TextMeshProUGUI nameLabel;
     public HandView handView;
     public DiscardPileView discardPileView;
+    public Button discardPileExpandButtonPlayer;
     public Button targetButton;
+    
 
     [Header("Containers")]
     public Transform tokensContainer;
@@ -22,6 +24,7 @@ public class PlayerView : MonoBehaviour
     public GameObject tokenPrefab;
     
     public event Action<int> OnTargetSelected;
+    public event Action OnDiscardPileExpanded;
 
     private PlayerState player;
     private Image buttonImage;
@@ -37,6 +40,13 @@ public class PlayerView : MonoBehaviour
             if (buttonImage != null)
                 buttonImage.raycastTarget = false;
         }
+
+        // Hook up discard pile expand buttons to show zoom view with local player's discard pile
+        if (discardPileExpandButtonPlayer != null)
+            discardPileExpandButtonPlayer.onClick.AddListener(() => 
+            {
+                OnDiscardPileExpanded?.Invoke();
+            });
     }
 
     public void Bind(PlayerState player, string displayName)

@@ -9,6 +9,7 @@ public class OpponentView : MonoBehaviour
     public TextMeshProUGUI nameLabel;
     public HandView handView;
     public DiscardPileView discardPileView;
+    public Button discardPileExpandButtonOpponents;
     public Button targetButton;
 
     [Header("Containers")]
@@ -22,7 +23,8 @@ public class OpponentView : MonoBehaviour
     public GameObject tokenPrefab;
 
     public event Action<int> OnTargetSelected;
-    
+    public event Action OnDiscardPileExpanded;
+
     private PlayerState player;
     private bool showHand;
     private Image buttonImage;
@@ -35,6 +37,13 @@ public class OpponentView : MonoBehaviour
             targetButton.onClick.AddListener(() => OnTargetSelected?.Invoke(GetPlayerId()));
             targetButton.interactable = false;
         }
+
+        // Hook up opponents' discard pile expand buttonto show zoom view with their discard pile
+        if (discardPileExpandButtonOpponents != null)
+            discardPileExpandButtonOpponents.onClick.AddListener(() => 
+            {
+                OnDiscardPileExpanded?.Invoke();
+            });
 
         // Raycast disabled by default so it doesn't block card clicks
         if (buttonImage != null)
