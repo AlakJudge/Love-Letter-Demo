@@ -27,7 +27,16 @@ public class SpyEffect : CardEffect
             handIndex = 0
         });
 
-        Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}");
-        TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}", game.turnNumber);
+        // Only send the name of the card if they're the source or the target, otherwise just say they see a card.
+        if (source.isLocalPlayer || target.isLocalPlayer)
+        {
+            Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}");
+            TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}", game.turnNumber);
+        }            
+        else
+        {
+            Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a card");
+            TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a card", game.turnNumber);
+        }
     }
 }
