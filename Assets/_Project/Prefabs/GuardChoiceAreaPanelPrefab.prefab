@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8878214148839752771}
   - component: {fileID: 6504922040956174384}
   m_Layer: 5
-  m_Name: GuardChoiceAreaPanel
+  m_Name: GuardChoiceAreaPanelPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

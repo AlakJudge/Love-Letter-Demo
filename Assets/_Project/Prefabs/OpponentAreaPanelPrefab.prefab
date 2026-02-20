@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6622584101390990784}
   - component: {fileID: 4350909882609627610}
   m_Layer: 5
-  m_Name: OpponentAreaView
+  m_Name: OpponentAreaPanelPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
