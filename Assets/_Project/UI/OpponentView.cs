@@ -26,7 +26,6 @@ public class OpponentView : MonoBehaviour
     public event Action OnDiscardPileExpanded;
 
     private PlayerState player;
-    private bool showHand;
     private Image buttonImage;
 
     private void Awake()
@@ -50,10 +49,9 @@ public class OpponentView : MonoBehaviour
             buttonImage.raycastTarget = false;
     }
 
-    public void Bind(PlayerState player, string displayName, bool showHand)
+    public void Bind(PlayerState player, string displayName)
     {
         this.player = player;
-        this.showHand = showHand;
         nameLabel.text = displayName;
         Refresh();
     }

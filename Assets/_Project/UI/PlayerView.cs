@@ -34,7 +34,7 @@ public class PlayerView : MonoBehaviour
         if (targetButton != null)
         {
             buttonImage = targetButton.GetComponent<Image>();
-            targetButton.onClick.AddListener(() => OnTargetSelected.Invoke(player.id));
+            targetButton.onClick.AddListener(() => OnTargetSelected?.Invoke(player.id));
             targetButton.interactable = false;
 
             if (buttonImage != null)
@@ -74,9 +74,7 @@ public class PlayerView : MonoBehaviour
         
         // Discard pile (icons)
         if (discardPileView != null)
-            discardPileView.UpdateDiscardPile(player);
-
-        handView.ShowHand(player);      
+            discardPileView.UpdateDiscardPile(player);     
     }
 
     private void RefreshStatus()

@@ -148,7 +148,7 @@ public class UIController : MonoBehaviour
         {
             if (i == localPlayerId) continue;
             var oppView = Instantiate(opponentAreaPrefab, opponentsContainer);
-            oppView.Bind(game.players[i], $"Player {i + 1}", showOpponentHands);
+            oppView.Bind(game.players[i], $"Player {i + 1}");
     
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
@@ -171,29 +171,29 @@ public class UIController : MonoBehaviour
                         OnPlayCard?.Invoke(botPlayerId, cardIndex);
                     }
                 };
-            }
-            // Hook card long press and release events
-            oppView.handView.OnCardLongPressed += card =>
-            {
-                Debug.Log("long press");
-                if (cardZoomView != null) cardZoomView.Show(card);
-                else Debug.Log("card zoom view null");
-            };
-            oppView.handView.OnCardReleased += card =>
-            {
-                if (cardZoomView != null) cardZoomView.Hide();                
-            };
-
-            // When opponent discard is expanded, show the same exit overlay
-            oppView.OnDiscardPileExpanded += () =>
-            {
-                if (discardPileZoomExitButton != null)
-                    discardPileZoomExitButton.gameObject.SetActive(true);
             
-                if (discardPileZoomView != null)
-                    discardPileZoomView.Show(game.players[oppView.GetPlayerId()]);
-            };
+                // Hook card long press and release events
+                oppView.handView.OnCardLongPressed += card =>
+                {
+                    Debug.Log("long press");
+                    if (cardZoomView != null) cardZoomView.Show(card);
+                    else Debug.Log("card zoom view null");
+                };
+                oppView.handView.OnCardReleased += card =>
+                {
+                    if (cardZoomView != null) cardZoomView.Hide();                
+                };
 
+                // When opponent discard is expanded, show the same exit overlay
+                oppView.OnDiscardPileExpanded += () =>
+                {
+                    if (discardPileZoomExitButton != null)
+                        discardPileZoomExitButton.gameObject.SetActive(true);
+                
+                    if (discardPileZoomView != null)
+                        discardPileZoomView.Show(game.players[oppView.GetPlayerId()]);
+                };
+            }
             opponentAreas[idx++] = oppView;
         }
     }
@@ -316,18 +316,30 @@ public class UIController : MonoBehaviour
                 }
             }
         }
+        if (opponentAreas != null)
+            foreach (var v in opponentAreas) v.Refresh();
+    }
+
+    private void RefreshPlayer()
+    {
+        if (playerArea != null && playerArea.handView != null && game != null)
+        {
+            var localPlayerState = game.players[localPlayerId];
+            playerArea.handView.ShowHand(localPlayerState);
+        }
+
+        if (playerArea != null)
+            playerArea.Refresh();
+        
+        if (playerManagers != null) // Sync player manager displays
+            foreach (var pm in playerManagers) 
+                pm.Sync();
     }
 
     public void RefreshAll()
     {
         RefreshOpponents();
-        playerArea.Refresh();
-        if (opponentAreas != null)
-            foreach (var v in opponentAreas) v.Refresh();
-        
-        if (playerManagers != null) // Sync player manager displays
-            foreach (var pm in playerManagers) 
-                pm.Sync();
+        RefreshPlayer();
     }
 
     public void SetDisplayName(int playerIndex, string name)
