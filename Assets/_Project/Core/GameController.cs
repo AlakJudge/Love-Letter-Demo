@@ -76,6 +76,7 @@ public class GameController : MonoBehaviour
         turn.OnGameWin += OnGameOver;
         turn.OnTurnComplete += HandleTurnComplete;
         turn.OnCardPlayResolved += HandleCardPlayResolved;
+        turn.OnCardEffectResolved += HandleCardEffectResolved;
 
         ui.OnRoundContinueClicked += () => StartNewRound();
 
@@ -207,6 +208,12 @@ public class GameController : MonoBehaviour
             deferredTurnComplete = false;
             ProcessTurnComplete();
         }
+    }
+    
+    private void HandleCardEffectResolved(PlayerState player, PlayerState target, CardData card)
+    {
+        if (ui != null)
+            StartCoroutine(ui.ShowCardEffect(player, target, card));
     }
 
     private void HandleTurnComplete()
