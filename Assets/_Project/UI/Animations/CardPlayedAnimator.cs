@@ -5,7 +5,8 @@ public class CardPlayAnimator : MonoBehaviour
 {
     [Tooltip("Prefab to use for temporary 'played' cards.")]
     public CardView cardViewPrefab;
-
+    [Tooltip("Shield prefab shown when Handmaid is played.")]
+    public GameObject handmaidShieldPrefab;
     [Tooltip("Target RectTransform where played cards should fly to (e.g., CardPlayArea).")]
     public RectTransform singleCardPlayedContainer;
     public RectTransform sourceCardPlayedContainer;
@@ -16,6 +17,9 @@ public class CardPlayAnimator : MonoBehaviour
 
     [Tooltip("Seconds to keep the card visible at the center before destroying it.")]
     public float holdDuration = 0.6f;
+
+    [Tooltip("Seconds it takes for the Handmaid shield to fade out.")]
+    public float shieldFadeDuration = 0.3f;
 
     private Canvas canvas;
 
@@ -93,6 +97,50 @@ public class CardPlayAnimator : MonoBehaviour
 
         tempRect.anchoredPosition = endLocalPos;
         tempRect.sizeDelta = endSize;
+
+        // Handmaid Shield Effect
+        if (card.type == CardType.Handmaid && handmaidShieldPrefab != null)
+        {
+            Debug.Log("Spawning Handmaid shield effect");
+            // Instantiate shield as a child of the temp card
+            var shieldEffect = Instantiate(handmaidShieldPrefab, tempRect);
+
+            var shieldRect = (RectTransform)shieldEffect.transform;
+
+            // Start same size as card
+            Vector2 shieldStartSize = endSize;
+            // End at triple size
+            Vector2 shieldEndSize   = endSize * 3f;
+
+            shieldRect.sizeDelta        = shieldStartSize;
+            shieldRect.anchoredPosition = Vector2.zero; // center on card
+            shieldRect.localScale       = Vector3.one;
+
+            var cg = shieldEffect.GetComponent<CanvasGroup>();
+            if (cg == null)
+                    cg = shieldEffect.gameObject.AddComponent<CanvasGroup>();
+            
+            cg.alpha = 1f;
+
+            if (shieldFadeDuration > 0f)
+            {
+                float tShield = 0f;
+                while (tShield < shieldFadeDuration)
+                {
+                    tShield += Time.deltaTime;
+                    float lerp = Mathf.Clamp01(tShield / shieldFadeDuration);
+                    
+                    // Grow size
+                    shieldRect.sizeDelta = Vector2.Lerp(shieldStartSize, shieldEndSize, lerp);
+                    // Fade out
+                    cg.alpha = 1f - lerp;
+                    
+                    yield return null;
+                }
+            }
+            else
+                Debug.LogWarning("Handmaid shield prefab is missing CanvasGroup component for fading effect.");
+        }
 
         // Optional hold at center
         if (holdDuration > 0f)
