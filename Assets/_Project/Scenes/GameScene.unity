@@ -3372,6 +3372,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 350
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 270
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -854.99994
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 121.49999
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4124,11 +4140,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardPlayAnimator
   cardViewPrefab: {fileID: 1472067890161114617, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}
+  handmaidShieldPrefab: {fileID: 2434154922797512230, guid: 76d855f025c567e458b5a8d10dc43c50, type: 3}
   singleCardPlayedContainer: {fileID: 1305877845}
   sourceCardPlayedContainer: {fileID: 656062922}
   targetCardPlayedContainer: {fileID: 406991366}
   flyDuration: 0.5
   holdDuration: 0.8
+  shieldFadeDuration: 0.8
 --- !u!1 &1842202004
 GameObject:
   m_ObjectHideFlags: 0
