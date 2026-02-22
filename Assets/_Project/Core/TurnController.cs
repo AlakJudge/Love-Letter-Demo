@@ -20,11 +20,10 @@ public class TurnController
     public event Action OnTurnComplete;
     public event Action<PlayerState> OnRoundWin;
     public event Action<PlayerState> OnGameWin;
+    public event Action<PlayerState, CardData> OnCardPlayResolved;
 
     public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
-        error = null;
-
         switch (cmd.type)
         {
             case CommandType.PlayCard:
@@ -112,8 +111,6 @@ public class TurnController
 
     public bool ProcessPlayCard(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
-        error = null;
-
         if (Phase != TurnPhase.ChooseCard) { error = "Not in ChooseCard phase."; return false; }
         if (game.CurrentPlayer.id != cmd.playerId) { error = "Not your turn."; return false; }
         if (cmd.cardIndex < 0 || cmd.cardIndex >= game.CurrentPlayer.hand.Count) { error = "Invalid card index."; return false; }
@@ -197,7 +194,11 @@ public class TurnController
 
     public bool ResolveCard(GameState game, int cardIndex, int targetId, int guessValue)
     {
+        var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
+
+        // Invoke event before resolving effect so UI can show card play animation before data changes
+        OnCardPlayResolved?.Invoke(player, card);
 
         // play card and discard from hand
         game.CurrentPlayer.hand.RemoveAt(cardIndex);
