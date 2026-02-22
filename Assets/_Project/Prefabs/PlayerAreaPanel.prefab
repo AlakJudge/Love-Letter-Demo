@@ -757,8 +757,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -42.5, y: -42.5}
-  m_SizeDelta: {x: 85, y: 85}
+  m_AnchoredPosition: {x: -174.99998, y: -151}
+  m_SizeDelta: {x: 450, y: 301.99}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &7267888541761516115
 CanvasRenderer:
@@ -928,5 +928,4 @@ MonoBehaviour:
   statusContainer: {fileID: 4438500934331718397}
   protectedStatusPrefab: {fileID: 2434154922797512230, guid: 76d855f025c567e458b5a8d10dc43c50, type: 3}
   eliminatedStatusPrefab: {fileID: 777074525928327592, guid: 90a376eb3e5ee9648b2fe2763d8a6ce3, type: 3}
-  activeStatusPrefab: {fileID: 119336130815595569, guid: 0175db1882f131043b63f4a033f50e45, type: 3}
   tokenPrefab: {fileID: 6580264393149756733, guid: 6705204d38d19394681e87f0b13be0ee, type: 3}
