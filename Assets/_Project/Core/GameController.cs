@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,8 @@ public class GameController : MonoBehaviour
     [Header("Setup")]
     public int playerCount = 4;
     public int localPlayerId = 0;
+    [Tooltip("Seconds of delay between bot actions (play card, select target, select guess).")]
+    public float botDelay = 1;
     public List<CardData> deckTemplate = new(); 
     public List<string> playerNames = new();
 
@@ -29,6 +32,9 @@ public class GameController : MonoBehaviour
     private GameState game;
     private TurnController turn;
     private RuleValidation rules;
+
+    private bool isAnimatingCardPlay;
+    private bool deferredTurnComplete;
 
     private Coroutine botRoutine;
 
@@ -60,12 +66,17 @@ public class GameController : MonoBehaviour
 
         // Subscribe to turn events
         turn.OnNeedTargetSelection += () => ui.EnableTargeting();
-        turn.OnNeedGuessSelection += () => ui.ShowGuardChoice();
-        turn.OnTurnComplete += OnTurnComplete;
+        turn.OnNeedGuessSelection  += () => // Only show guard choice view when played by local player
+        {
+            var current = game.CurrentPlayer;
+            if (current != null && current.id == ui.localPlayerId)
+                ui.ShowGuardChoice();
+        };
         turn.OnRoundWin += OnRoundOver;
         turn.OnGameWin += OnGameOver;
+        turn.OnTurnComplete += HandleTurnComplete;
+        turn.OnCardPlayResolved += HandleCardPlayResolved;
 
-        // When UI says “continue”, actually start the next round
         ui.OnRoundContinueClicked += () => StartNewRound();
 
         ui.OnRematchClicked += () => RestartGame();
@@ -146,13 +157,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void OnTurnComplete()
-    {
-        ui.DisableTargeting();
-        ui.HideGuardChoice();
-        BeginTurnForCurrentPlayer();
-    }
-
     private void BeginTurnForCurrentPlayer()
     {
         turn.StartTurn(game);
@@ -168,19 +172,59 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator RunBotTurn()
+    private IEnumerator RunBotTurn()
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(botDelay); // Delay between bot starts turn and plays card
 
         var botCommands = BotController.GetTurnCommands(game, game.CurrentPlayer.id, rules);
 
         foreach (var cmd in botCommands)
         {
             ExecuteCommand(cmd);
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(botDelay); // Delay between bot commands (e.g., play card, then select target, then select guess)
         }
 
         botRoutine = null;
+    }
+
+    // Called after card play is resolved, before turn complete. Used to trigger animations before data changes.
+    private void HandleCardPlayResolved(PlayerState player, CardData card)
+    {
+        isAnimatingCardPlay = true;
+        StartCoroutine(HandleCardPlayResolvedRoutine(player, card));
+    }
+    
+    private IEnumerator HandleCardPlayResolvedRoutine(PlayerState player, CardData card)
+    {
+        if (ui != null)
+            yield return ui.AnimateCardPlay(player, card);
+
+        isAnimatingCardPlay = false;
+
+        // If a turn complete event arrived while we were animating, process it now.
+        if (deferredTurnComplete)
+        {
+            deferredTurnComplete = false;
+            ProcessTurnComplete();
+        }
+    }
+
+    private void HandleTurnComplete()
+    {
+        // If we're currently animating a card play, defer the turn complete processing until after the animation finishes
+        if (isAnimatingCardPlay)
+        {
+            deferredTurnComplete = true;
+            return;
+        }
+        ProcessTurnComplete();
+    }
+
+    private void ProcessTurnComplete()
+    {
+        ui.DisableTargeting();
+        ui.HideGuardChoice();
+        BeginTurnForCurrentPlayer();
     }
 
     private void OnRoundOver(PlayerState winner)
