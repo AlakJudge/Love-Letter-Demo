@@ -75,4 +75,16 @@ public class HandView : MonoBehaviour
             index++;
         }
     }
+    
+    public CardView FindViewForCard(CardData card)
+    {
+        for (int i = 0; i < container.childCount; i++)
+        {
+            var view = container.GetChild(i).GetComponent<CardView>();
+            if (view != null && view.boundCard == card)
+                return view;
+        }
+        return null;
+    }
+
 }
