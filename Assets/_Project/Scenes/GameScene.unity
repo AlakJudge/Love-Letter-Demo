@@ -1491,6 +1491,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DiscardPileZoomView
   container: {fileID: 148400389}
   cardPrefab: {fileID: 1472067890161114617, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}
+  cardZoomView: {fileID: 1418973143}
 --- !u!114 &537929033
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2856,7 +2857,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000091552734}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1262122030
@@ -3373,20 +3374,32 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 350
+      propertyPath: m_AnchorMax.x
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 270
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 368.74
       objectReference: {fileID: 0}
     - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -854.99994
+      value: 110.62201
       objectReference: {fileID: 0}
     - target: {fileID: 7687506874568012809, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 121.49999
+      value: -13.500008
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4250,9 +4263,9 @@ RectTransform:
   - {fileID: 254036987}
   - {fileID: 527715379}
   - {fileID: 1563336039}
-  - {fileID: 1418973140}
   - {fileID: 845491739}
   - {fileID: 537929031}
+  - {fileID: 1418973140}
   - {fileID: 1724929609}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
