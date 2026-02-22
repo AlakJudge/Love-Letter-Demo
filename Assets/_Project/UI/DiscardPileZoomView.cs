@@ -6,6 +6,8 @@ public class DiscardPileZoomView : MonoBehaviour
     public Transform container;
     public CardView cardPrefab;
 
+    public CardZoomView cardZoomView;
+
     public void Show(PlayerState player)
     {
         if (player == null || container == null || cardPrefab == null)
@@ -24,9 +26,18 @@ public class DiscardPileZoomView : MonoBehaviour
             var view = Instantiate(cardPrefab, container);
             view.Set(card);
             // No interaction from here
-            view.onClick            = null;
-            view.onLongPress        = null;
-            view.onLongPressRelease = null;
+            view.onClick = null;
+            // Long press = zoom in on card, release = hide zoom
+            view.onLongPress = () =>
+            {
+                if (cardZoomView != null)
+                    cardZoomView.Show(card);
+            };
+            view.onLongPressRelease = () =>
+            {
+                if (cardZoomView != null)
+                    cardZoomView.Hide();
+            };
         }
 
         gameObject.SetActive(true);
