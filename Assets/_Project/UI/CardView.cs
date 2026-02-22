@@ -37,6 +37,18 @@ public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         button.onClick.AddListener(HandleClick);
     }
 
+    public void SetColor(Color color)
+    {
+        if (image != null)
+            image.color = color;
+    }
+
+    public void ResetColor()
+    {
+        if (image != null)
+            image.color = Color.white;
+    }
+
     private void HandleClick()
     {
         if (!longPressTriggered)
