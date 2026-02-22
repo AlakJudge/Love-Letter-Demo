@@ -21,6 +21,7 @@ public class TurnController
     public event Action<PlayerState> OnRoundWin;
     public event Action<PlayerState> OnGameWin;
     public event Action<PlayerState, CardData> OnCardPlayResolved;
+    public event Action<PlayerState, PlayerState, CardData> OnCardEffectResolved;
 
     public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
@@ -117,8 +118,11 @@ public class TurnController
         
         var card = game.CurrentPlayer.hand[cmd.cardIndex];
 
-
-        if (!rules.HasCountessRule(game, card, out error)) return false;
+        if (!rules.HasCountessRule(game, card, out error))
+        {
+            OnCardEffectResolved?.Invoke(game.CurrentPlayer, null, card);
+            return false;
+        }
         
         pendingCardIndex = cmd.cardIndex;  
         turnLogger.Log($"Player {game.CurrentPlayer.id + 1} played {card.type}.", game.turnNumber);
