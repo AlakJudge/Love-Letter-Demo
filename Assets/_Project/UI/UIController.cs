@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,20 +11,23 @@ public class UIController : MonoBehaviour
     public Transform opponentsContainer;
     public GameObject guardChoiceContainer;
     
-    
-    [Header("Other UI Elements")]
-    public TransitionView transitionView;
-    public CardZoomView cardZoomView;
-    public DiscardPileZoomView discardPileZoomView;
+    [Header("Buttons")]
     public Button discardPileZoomExitButton;
     public Button discardPileExpandButtonOpponents;
     public Button rematchButton;
     public Button quitButton;
 
+    [Header("Other UI Elements")]
+    public TransitionView transitionView;
+    public CardZoomView cardZoomView;
+    public DiscardPileZoomView discardPileZoomView;
 
     [Header("Prefabs")]
     public PlayerView playerAreaPrefab;
     public OpponentView opponentAreaPrefab;
+
+    [Header("Animation")]
+    public CardPlayAnimator cardPlayAnimator;
 
     [Header("Config")]
     public int localPlayerId = 0; 
@@ -44,10 +48,9 @@ public class UIController : MonoBehaviour
     public event Action OnRoundContinueClicked;
     public event Action OnRematchClicked;
     public event Action OnQuitClicked;
-
-    private PlayerView playerView;
-    private OpponentView opponentView;
+    public event Action<PlayerState, CardData> OnCardPlayResolved;
     
+
     private void Awake()
     {
         if (rematchButton != null)
@@ -247,6 +250,33 @@ public class UIController : MonoBehaviour
 
         if (discardPileZoomView != null)
             discardPileZoomView.Hide();
+    }
+
+    public IEnumerator AnimateCardPlay(PlayerState player, CardData card)
+    {
+        if (cardPlayAnimator == null || game == null) yield break;
+
+        CardView sourceView = null;
+
+        if (player.id == localPlayerId)
+        {
+            sourceView = playerArea.handView.FindViewForCard(card);
+        }
+        else if (opponentAreas != null)
+        {
+            foreach (var opp in opponentAreas)
+            {
+                if (opp.GetPlayerId() == player.id && opp.handView != null)
+                {
+                    sourceView = opp.handView.FindViewForCard(card);
+                    break;
+                }
+            }
+        }
+
+        if (sourceView == null) yield break;
+        
+        yield return cardPlayAnimator.PlayCardAnimationRoutine(sourceView, card);
     }
 
     public void ShowGuardChoice()
