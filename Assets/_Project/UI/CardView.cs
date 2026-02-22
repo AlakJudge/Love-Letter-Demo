@@ -7,6 +7,7 @@ public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public Image image;
     public Button button;
+    public CardData boundCard;
     public bool isRevealed = false;
     
     public Action onClick;
@@ -21,6 +22,7 @@ public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void Set(CardData card)
     {
+        boundCard = card;
         image.sprite = card.cardFront;
         isRevealed = true;
         button.onClick.RemoveAllListeners();
@@ -28,6 +30,7 @@ public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     }
     public void ShowBack(CardData card)
     {
+        boundCard = card;
         image.sprite = card.cardBack;
         isRevealed = false;
         button.onClick.RemoveAllListeners();
