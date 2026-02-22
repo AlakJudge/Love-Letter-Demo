@@ -40,6 +40,7 @@ public class UIController : MonoBehaviour
     private PlayerView playerArea;
     private OpponentView[] opponentAreas;
     private GuardChoiceView guardChoiceView;
+    private CardData lastCountessWarningCard; // For showing countess rule warning when player tries to play prince or king with countess in hand
 
     // Events to send card index
     public event Action<int, int> OnPlayCard;        // playerId, cardIndex
@@ -317,6 +318,56 @@ public class UIController : MonoBehaviour
             bool canTarget = enabled && !player.isProtected && !player.isEliminated;
             opp.SetTargetable(canTarget);
         }
+    }
+
+    public IEnumerator ShowCardEffect(PlayerState source, PlayerState target, CardData card)
+    {
+        switch (card.type)
+        {
+            case CardType.Prince or CardType.King:
+                // Check if Countess is in hand
+                if (source.hand.Exists(c => c.type == CardType.Countess))
+                {
+                    // Only highlight Countess if this is the second time we're warning about this card play if player keeps trying to play prince/king with countess in hand
+                    bool highlightCountess = (lastCountessWarningCard == card); 
+                    lastCountessWarningCard = card;
+                    
+                    if (playerArea != null)
+                    {
+                        // Highlight the prince or king in red if player tried to play it with countess in hand
+                        CardView princeOrKingView = playerArea.handView.FindViewForCard(card);
+                        if (princeOrKingView != null)
+                            princeOrKingView.SetColor(Color.softRed);
+
+                        var countessView = source.hand.Find(c => c.type == CardType.Countess);
+                        CardView countessCardView = null;
+                        
+                        // If we've already shown the warning for this card once, show the countess in green to really point the user to play the countess
+                        if (countessView != null && highlightCountess)
+                        {
+                            countessCardView = playerArea.handView.FindViewForCard(countessView);
+                            if (countessCardView != null)
+                                countessCardView.SetColor(Color.softGreen);
+                        }
+                        // Wait, then reset
+                        yield return new WaitForSeconds(.5f);
+
+                        if (princeOrKingView != null)
+                            princeOrKingView.SetColor(Color.white);
+
+                        if (countessCardView != null)
+                            countessCardView.SetColor(Color.white);
+                    }
+                }
+                break;
+            case CardType.Handmaid:
+                // Show shield icon over player until their next turn
+                {
+                    
+                }
+                break;
+        }
+        yield return new WaitForSeconds(1.5f);
     }
 
     private void ClearChildren(Transform t)
