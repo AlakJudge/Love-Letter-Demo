@@ -19,7 +19,6 @@ public class OpponentView : MonoBehaviour
     [Header("Prefabs")]
     public GameObject protectedStatusPrefab;
     public GameObject eliminatedStatusPrefab;
-    public GameObject activeStatusPrefab;
     public GameObject tokenPrefab;
 
     public event Action<int> OnTargetSelected;
@@ -91,8 +90,6 @@ public class OpponentView : MonoBehaviour
             Instantiate(protectedStatusPrefab, statusContainer);
         else if (player.isEliminated)
             Instantiate(eliminatedStatusPrefab, statusContainer);
-        else
-            Instantiate(activeStatusPrefab, statusContainer);
     }
 
     private void RefreshTokens()
