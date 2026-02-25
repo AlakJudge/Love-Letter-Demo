@@ -12,10 +12,14 @@ public class PlayerState
     public bool isEliminated;
     public int tokens;
 
-    public PlayerState(int id, bool isLocal = false) 
+    public PlayerState(int id, bool isLocal = false, List<CardData> hand = null) 
     { 
         this.id = id; 
         this.isLocalPlayer = isLocal;
+        if (hand != null)
+        {
+            this.hand.AddRange(hand);
+        }
     }
 
     public void DrawCard(Stack<CardData> deck)
