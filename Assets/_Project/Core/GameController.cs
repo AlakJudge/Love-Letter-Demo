@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 public class GameController : MonoBehaviour
 {
@@ -34,6 +35,7 @@ public class GameController : MonoBehaviour
     private RuleValidation rules;
 
     private bool isAnimatingCardPlay;
+    private bool deferredUiRefresh; 
     private bool deferredTurnComplete;
 
     private Coroutine botRoutine;
@@ -75,7 +77,6 @@ public class GameController : MonoBehaviour
         turn.OnRoundWin += OnRoundOver;
         turn.OnGameWin += OnGameOver;
         turn.OnTurnComplete += HandleTurnComplete;
-        turn.OnCardPlayResolved += HandleCardPlayResolved;
         turn.OnCardEffectResolved += HandleCardEffectResolved;
 
         ui.OnRoundContinueClicked += () => StartNewRound();
@@ -153,9 +154,14 @@ public class GameController : MonoBehaviour
     public void ExecuteCommand(PlayerCommand cmd)
     {
         if (turn.ExecuteCommand(game, cmd, rules, out string error))
-        {
-            ui.RefreshAll();
-        }
+            if (isAnimatingCardPlay)
+            {
+                deferredUiRefresh = true;
+            }
+            else
+            {
+                ui.RefreshAll();
+            }
     }
 
     private void BeginTurnForCurrentPlayer()
@@ -187,33 +193,53 @@ public class GameController : MonoBehaviour
 
         botRoutine = null;
     }
-
-    // Called after card play is resolved, before turn complete. Used to trigger animations before data changes.
-    private void HandleCardPlayResolved(PlayerState player, CardData card)
+    private void HandleCardEffectResolved(PlayerState player, PlayerState target, CardData card)
+    {
+        if (ui == null)
+            return;
+        
+        StartCoroutine(HandleCardEffectResolvedRoutine(player, target, card));
+    }
+    private IEnumerator HandleCardEffectResolvedRoutine(PlayerState player, PlayerState target, CardData card)
     {
         isAnimatingCardPlay = true;
-        StartCoroutine(HandleCardPlayResolvedRoutine(player, card));
-    }
-    
-    private IEnumerator HandleCardPlayResolvedRoutine(PlayerState player, CardData card)
-    {
-        if (ui != null)
-            yield return ui.AnimateCardPlay(player, card);
 
+        // Clone the player and target objects (if exists)
+        // This prevents issues with the card effect being resolved before the animation plays
+        PlayerState playerClone = new PlayerState(player.id, player.isLocalPlayer, new List<CardData>(player.hand))
+        {
+            isEliminated = player.isEliminated
+        };
+        PlayerState targetClone = null;
+        if (target != null)
+        {
+            targetClone = new PlayerState(target.id, target.isLocalPlayer, new List<CardData>(target.hand))
+            {
+                isEliminated = target.isEliminated
+            };
+        }
+
+        yield return ui.AnimateCardPlay(playerClone, card, () => ui.ShowCardEffect(playerClone, targetClone, card));
         isAnimatingCardPlay = false;
 
-        // If a turn complete event arrived while we were animating, process it now.
-        if (deferredTurnComplete)
+        TryProcessDeferredTurn();
+    }
+
+    private void TryProcessDeferredTurn()
+    {
+        // First, apply any UI refresh that was held back while animating
+        if (deferredUiRefresh)
+        {
+            deferredUiRefresh = false;
+            ui.RefreshAll();
+        }
+
+        // Then, if a turn complete was deferred, process it
+        if (deferredTurnComplete && !isAnimatingCardPlay)
         {
             deferredTurnComplete = false;
             ProcessTurnComplete();
         }
-    }
-    
-    private void HandleCardEffectResolved(PlayerState player, PlayerState target, CardData card)
-    {
-        if (ui != null)
-            StartCoroutine(ui.ShowCardEffect(player, target, card));
     }
 
     private void HandleTurnComplete()
@@ -231,6 +257,7 @@ public class GameController : MonoBehaviour
     {
         ui.DisableTargeting();
         ui.HideGuardChoice();
+        game.AdvanceToNextPlayer();
         BeginTurnForCurrentPlayer();
     }
 
