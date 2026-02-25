@@ -20,7 +20,6 @@ public class TurnController
     public event Action OnTurnComplete;
     public event Action<PlayerState> OnRoundWin;
     public event Action<PlayerState> OnGameWin;
-    public event Action<PlayerState, CardData> OnCardPlayResolved;
     public event Action<PlayerState, PlayerState, CardData> OnCardEffectResolved;
 
     public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
@@ -31,7 +30,8 @@ public class TurnController
                 return ProcessPlayCard(game, cmd, rules, out error);
             
             case CommandType.SelectTarget:
-                return ProcessSelectTarget(game, cmd, rules, out error);
+                ProcessSelectTarget(game, cmd, rules, out error);
+                return true;
             
             case CommandType.SelectGuess:
                 return ProcessSelectGuess(game, cmd, rules, out error);
@@ -131,7 +131,7 @@ public class TurnController
         if (CardNeedsTarget(card.type))
         {
             Phase = TurnPhase.SelectTarget;
-            OnNeedTargetSelection.Invoke();
+            OnNeedTargetSelection?.Invoke();
             return true;
         }
         // No target needed, resolve immediately
@@ -180,7 +180,7 @@ public class TurnController
             {
                 Phase = TurnPhase.SelectGuess;
                 TurnLogger.Instance.Log($"Player {game.CurrentPlayer.id + 1} targets Player {cmd.targetPlayerId + 1} with Guard. Now choose a card to guess.", game.turnNumber);
-                OnNeedGuessSelection.Invoke();
+                OnNeedGuessSelection?.Invoke();
                 return true;
             }
         }
@@ -201,8 +201,14 @@ public class TurnController
         var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
 
-        // Invoke event before resolving effect so UI can show card play animation before data changes
-        OnCardPlayResolved?.Invoke(player, card);
+        // Invoke fly-in event before resolving effect so UI can show card play animation before data changes
+        //OnCardPlayResolved?.Invoke(player, card);
+    
+        // Invoke event for showing targeting animation for cards with targets
+        PlayerState target = null;
+        if (targetId >= 0)
+            target = game.players[targetId];
+        OnCardEffectResolved?.Invoke(game.CurrentPlayer, target, card); 
 
         // play card and discard from hand
         game.CurrentPlayer.hand.RemoveAt(cardIndex);
@@ -254,9 +260,7 @@ public class TurnController
             }
         }
         Phase = TurnPhase.EndTurn;
-        game.AdvanceToNextPlayer();
         OnTurnComplete.Invoke();
-
         return true;
     }
     private bool CardNeedsTarget(CardType type)
