@@ -17,6 +17,12 @@ public class GameState
     public int turnNumber;
     public CardData removedCard;
 
+    // Last Guard effect info
+    public int  lastGuardSourcePlayerId = -1;
+    public int  lastGuardTargetPlayerId = -1;
+    public CardType? lastGuardGuessType = null;
+    public bool lastGuardGuessCorrect   = false;
+
     public readonly List<SpyRevealInfo> spyReveals = new();
 
     public PlayerState CurrentPlayer => players[currentPlayerIndex];
@@ -46,6 +52,14 @@ public class GameState
             if (r.sourcePlayerId == observerId && r.targetPlayerId == targetId)
                 yield return r.handIndex;
         }
+    }
+
+    public void ClearLastGuardInfo()
+    {
+        lastGuardSourcePlayerId = -1;
+        lastGuardTargetPlayerId = -1;
+        lastGuardGuessType      = null;
+        lastGuardGuessCorrect   = false;
     }
 
     public void AdvanceToNextPlayer()
