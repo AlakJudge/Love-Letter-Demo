@@ -6,6 +6,8 @@ using UnityEngine.XR;
 
 public class GameController : MonoBehaviour
 {
+    public static GameController Instance { get; private set; }
+
     [Header("Setup")]
     public int playerCount = 4;
     public int localPlayerId = 0;
@@ -38,10 +40,18 @@ public class GameController : MonoBehaviour
     private bool deferredUiRefresh; 
     private bool deferredTurnComplete;
 
+    private PlayerState pendingRoundWinner;
+    private PlayerState pendingGameWinner;
+
     private Coroutine botRoutine;
 
     // For future networking
     private bool isMultiplayer = false;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -133,6 +143,11 @@ public class GameController : MonoBehaviour
                 targetPlayerId = turn.pendingTargetId,
                 guessValue = guess
             };
+            game.lastGuardSourcePlayerId = playerId;
+            game.lastGuardTargetPlayerId = turn.pendingTargetId;
+            game.lastGuardGuessType = (CardType)guess;
+            Debug.Log($"Player {playerId + 1} guessed Player {turn.pendingTargetId + 1} has a {(CardType)guess}");
+            game.lastGuardGuessCorrect = game.lastGuardGuessType == game.players[turn.pendingTargetId].hand[0].type;
             ProcessCommand(cmd);
         };
     }
@@ -219,9 +234,21 @@ public class GameController : MonoBehaviour
             };
         }
 
-        yield return ui.AnimateCardPlay(playerClone, card, () => ui.ShowCardEffect(playerClone, targetClone, card));
-        isAnimatingCardPlay = false;
+        // Countess rule: skip fly-in if this play is illegal
+        bool countessConflict =
+            (card.type == CardType.Prince || card.type == CardType.King) &&
+            playerClone.hand.Exists(c => c.type == CardType.Countess);
 
+        if (countessConflict)
+        {
+            // optionally still show the Countess warning UI
+            yield return ui.ShowCardEffect(playerClone, targetClone, card);
+        }
+        else
+        {
+            yield return ui.AnimateCardPlay(playerClone, card, () => ui.ShowCardEffect(playerClone, targetClone, card));
+        }
+        isAnimatingCardPlay = false;
         TryProcessDeferredTurn();
     }
 
@@ -234,7 +261,26 @@ public class GameController : MonoBehaviour
             ui.RefreshAll();
         }
 
-        // Then, if a turn complete was deferred, process it
+        // 
+        if (!isAnimatingCardPlay)
+        {
+            if (pendingGameWinner != null)
+            {
+                var winner = pendingGameWinner;
+                pendingGameWinner = null;
+                ui.HandleGameWin(winner);
+                return; // don't start another turn after game over
+            }
+            
+            if (pendingRoundWinner != null)
+            {
+                var winner = pendingRoundWinner;
+                pendingRoundWinner = null;
+                ui.HandleRoundWin(winner);
+                return; // don't start another turn after round over
+            }
+        }
+        // Then, if a turn complete was deferred, process it now
         if (deferredTurnComplete && !isAnimatingCardPlay)
         {
             deferredTurnComplete = false;
@@ -263,12 +309,26 @@ public class GameController : MonoBehaviour
 
     private void OnRoundOver(PlayerState winner)
     {
-        ui.HandleRoundWin(winner);
+        if (isAnimatingCardPlay)
+        {
+            pendingRoundWinner = winner;
+        }
+        else
+        {
+            ui.HandleRoundWin(winner);
+        }
     }
 
     private void OnGameOver(PlayerState winner)
     {
-        ui.HandleGameWin(winner);
+        if (isAnimatingCardPlay)
+        {
+            pendingGameWinner = winner;
+        }
+        else
+        {
+            ui.HandleGameWin(winner);
+        }
     }
 
     public void StartNewRound()
