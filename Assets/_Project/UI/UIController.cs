@@ -41,6 +41,9 @@ public class UIController : MonoBehaviour
     private OpponentView[] opponentAreas;
     private GuardChoiceView guardChoiceView;
     private CardData lastCountessWarningCard; // For showing countess rule warning when player tries to play prince or king with countess in hand
+    
+    private float animationDelay => 
+    GameController.Instance != null ? GameController.Instance.botDelay : 1f;
 
     // Events to send card index
     public event Action<int, int> OnPlayCard;        // playerId, cardIndex
@@ -379,7 +382,7 @@ public class UIController : MonoBehaviour
 
     public IEnumerator ShowCardEffect(PlayerState source, PlayerState target, CardData card)
     {
-        if (game == null || target == null) yield break;
+        if (game == null) yield break;
 
         switch (card.type)
         {
@@ -388,7 +391,7 @@ public class UIController : MonoBehaviour
                 if (source.hand.Exists(c => c.type == CardType.Countess))
                 {
                     // Only highlight Countess if this is the second time we're warning about this card play if player keeps trying to play prince/king with countess in hand
-                    bool highlightCountess = (lastCountessWarningCard == card); 
+                    bool highlightCountess = lastCountessWarningCard == card; 
                     lastCountessWarningCard = card;
                     
                     if (playerArea != null)
@@ -409,7 +412,7 @@ public class UIController : MonoBehaviour
                                 countessCardView.SetColor(Color.softGreen);
                         }
                         // Wait, then reset
-                        yield return new WaitForSeconds(.5f);
+                        yield return new WaitForSeconds(animationDelay);
 
                         if (princeOrKingView != null)
                             princeOrKingView.SetColor(Color.white);
@@ -422,7 +425,12 @@ public class UIController : MonoBehaviour
             case CardType.Baron:
                 if (target != null && source.hand.Count > 0 && target.hand.Count > 0)
                 {
+                    if (source.id == target.id)
+                        yield break;
+                    
                     CardData sourceCard = null;
+                    bool isLocalBaronOwner = source.id == localPlayerId;
+
                     // Find the card that's not a baron, unless both are
                     for (int i = 0; i < source.hand.Count; i++)
                     {
@@ -436,13 +444,26 @@ public class UIController : MonoBehaviour
                             sourceCard = source.hand[1]; // in case both cards are barons
                         }
                     }
+                    // Show tha baron card and the back of the card to all plaeyrs
                     CardData targetCard = target.hand[target.hand.Count - 1];
+                    
+                    // Only Baron player and target see target's card face‑up
+                    bool canSeeTarget =
+                        localPlayerId == source.id ||
+                        localPlayerId == target.id;
+
                     yield return AnimateCompareCards(
                         source, target,
                         sourceCard, targetCard,
-                        revealSource: true,
-                        revealTarget: true);
+                        revealSource: canSeeTarget, 
+                        revealTarget: canSeeTarget,
+                        destroyAtEnd: !isLocalBaronOwner); // Only reveal to baron player
+
+                    yield return new WaitForSeconds(animationDelay);
+                    cardPlayAnimator.DestroyLastCompare();
                 }
+
+
                 break;
             case CardType.Spy:
                 // Show target back at first, then Spy reveals the target's card
@@ -458,7 +479,7 @@ public class UIController : MonoBehaviour
                         }
                     }
                     CardData targetCard = target.hand[target.hand.Count - 1];
-                    bool isLocalSpyOwner = (source.id == localPlayerId);
+                    bool isLocalSpyOwner = source.id == localPlayerId;
 
                     // Phase 1: Spy shown, target hidden
                     yield return AnimateCompareCards(
@@ -472,12 +493,47 @@ public class UIController : MonoBehaviour
                     yield return cardPlayAnimator.RevealLastCompare(
                         revealSource: true,
                         revealTarget: true);
-                    yield return new WaitForSeconds(1f);
+
+                    yield return new WaitForSeconds(animationDelay);
                     cardPlayAnimator.DestroyLastCompare();
                 }
                 break;
             case CardType.Guard:
-                // TODO
+                if (target != null && source.hand.Count > 0 && target.hand.Count > 0)
+                {
+                    // Find the guard in hand
+                    CardData sourceCard = null;
+                    for (int i = 0; i < source.hand.Count; i++)
+                    {
+                        if (source.hand[i].type == CardType.Guard)
+                        {  
+                            sourceCard = source.hand[i];
+                        }
+                    }
+                    CardData targetCard = target.hand[target.hand.Count - 1];
+                    bool isLocalGuardOwner = source.id == localPlayerId;
+
+                    // Phase 1: Guard shown, target hidden
+                    yield return AnimateCompareCards(
+                        source, target,
+                        sourceCard, targetCard,
+                        revealSource: true,
+                        revealTarget: false,
+                        destroyAtEnd: !isLocalGuardOwner); // Only reveal to guard player
+                    
+                    // Phase 2: Check if guess was correct and show result
+                    bool guessCorrect = game.lastGuardGuessType == targetCard.type;
+                    
+                    // Phase 3: Guard reveals target card
+                    if (guessCorrect && isLocalGuardOwner)
+                    {                        
+                        yield return cardPlayAnimator.RevealLastCompare(
+                            revealSource: true,
+                            revealTarget: true);
+                    }
+                    yield return new WaitForSeconds(animationDelay);
+                    cardPlayAnimator.DestroyLastCompare();
+                }
                 break;
         }
     }
