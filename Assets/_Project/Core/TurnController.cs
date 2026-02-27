@@ -200,9 +200,6 @@ public class TurnController
     {
         var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
-
-        // Invoke fly-in event before resolving effect so UI can show card play animation before data changes
-        //OnCardPlayResolved?.Invoke(player, card);
     
         // Invoke event for showing targeting animation for cards with targets
         PlayerState target = null;
