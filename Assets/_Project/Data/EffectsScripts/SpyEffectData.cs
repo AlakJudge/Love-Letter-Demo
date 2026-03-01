@@ -28,7 +28,7 @@ public class SpyEffect : CardEffect
         });
 
         // Only send the name of the card if they're the source or the target, otherwise just say they see a card.
-        if (source.isLocalPlayer || target.isLocalPlayer)
+        if (GameController.Instance.IsLocalOwner(source) || GameController.Instance.IsLocalOwner(target))
         {
             Debug.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}");
             TurnLogger.Instance.Log($"Player {source.id + 1} spies on Player {target.id + 1}'s hand and sees a {revealedCard.type}", game.turnNumber);
