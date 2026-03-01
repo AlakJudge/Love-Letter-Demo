@@ -16,6 +16,7 @@ public class GameState
     public int currentPlayerIndex;
     public int turnNumber;
     public CardData removedCard;
+    public int seed;
 
     // Last Guard effect info
     public int  lastGuardSourcePlayerId = -1;
@@ -27,12 +28,13 @@ public class GameState
 
     public PlayerState CurrentPlayer => players[currentPlayerIndex];
 
-    public GameState(IEnumerable<PlayerState> players, IEnumerable<CardData> deckCards)
+    public GameState(IEnumerable<PlayerState> players, IEnumerable<CardData> deckCards, int seed = 0)
     {
         foreach (var player in players) this.players.Add(player);
         foreach (var card in deckCards) deck.Push(card);
         currentPlayerIndex = 0;
         turnNumber = 1;
+        this.seed = seed;
     }
 
     public void ClearSpyReveals()
