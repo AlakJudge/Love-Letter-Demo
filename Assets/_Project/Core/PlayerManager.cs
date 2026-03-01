@@ -26,7 +26,11 @@ public class PlayerManager : MonoBehaviour
     {
         if (state == null) return;
         id = state.id;
-        isLocalPlayer = state.isLocalPlayer;
+
+        // derive "local" from GameController instead of storing it in PlayerState
+        var gc = GameController.Instance;
+        isLocalPlayer = gc != null && gc.IsLocalOwner(state);
+
         tokens = state.tokens;
         isProtected = state.isProtected;
         isEliminated = state.isEliminated;
