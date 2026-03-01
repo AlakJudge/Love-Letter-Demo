@@ -4,7 +4,8 @@ using UnityEngine;
 public class PlayerState
 {
     public readonly int id;
-    public bool isLocalPlayer;
+    public int actorNumber;
+    public bool isBot;
     public readonly List<CardData> hand = new();
     public readonly List<CardData> discardPile = new();
     public readonly List<CardData> revealedCards = new();
@@ -12,10 +13,11 @@ public class PlayerState
     public bool isEliminated;
     public int tokens;
 
-    public PlayerState(int id, bool isLocal = false, List<CardData> hand = null) 
+    public PlayerState(int id, int actorNumber = -1, bool isBot = false, List<CardData> hand = null) 
     { 
         this.id = id; 
-        this.isLocalPlayer = isLocal;
+        this.actorNumber = actorNumber;
+        this.isBot       = isBot;
         if (hand != null)
         {
             this.hand.AddRange(hand);
