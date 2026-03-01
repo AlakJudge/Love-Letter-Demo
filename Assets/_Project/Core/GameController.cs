@@ -2,11 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.XR;
+using Photon.Pun;
+using Photon.Realtime;
+using ExitGames.Client.Photon;
 
 public class GameController : MonoBehaviour
 {
     public static GameController Instance { get; private set; }
+
+    private enum SlotType
+    {
+        Empty = 0,
+        Human = 1,
+        Bot   = 2
+    }
 
     [Header("Setup")]
     public int playerCount = 4;
@@ -47,30 +56,45 @@ public class GameController : MonoBehaviour
 
     // For future networking
     private bool isMultiplayer = false;
+    private PhotonView photonView;
 
     private void Awake()
     {
         Instance = this;
+        photonView = GetComponent<PhotonView>();
     }
 
     void Start()
     {
         InitializeGame();
         SetupUI();
-        StartNewRound();
+        StartNewRoundNetworked();
     }
 
     private void InitializeGame()
     {
-        // Build players
-        var players = new List<PlayerState>();
-        for (int i = 0; i < playerCount; i++) 
-        {
-            var player = new PlayerState(i, i == localPlayerId);
-            players.Add(player);
-        }
-        Debug.Log($"Created {playerCount} players.");
+        List<PlayerState> players;
 
+        if (PhotonNetwork.InRoom)
+        {
+            isMultiplayer = true;
+            players = BuildPlayersFromOnlineLobby();
+        }
+        else
+        {
+            isMultiplayer = false;
+
+            // Original local setup
+            players = new List<PlayerState>();
+            for (int i = 0; i < playerCount; i++)
+            {
+                bool isBot = i != localPlayerId;
+                players.Add(new PlayerState(i, actorNumber: 0, isBot: isBot));
+            }
+            Debug.Log($"Created {playerCount} local players.");
+        }
+
+        // Create GameState + deck
         var deck = new List<CardData>(deckTemplate);
         game = new GameState(players, deck);
         turn = new TurnController();
@@ -89,7 +113,7 @@ public class GameController : MonoBehaviour
         turn.OnTurnComplete += HandleTurnComplete;
         turn.OnCardEffectResolved += HandleCardEffectResolved;
 
-        ui.OnRoundContinueClicked += () => StartNewRound();
+        ui.OnRoundContinueClicked += () => StartNewRoundNetworked();
 
         ui.OnRematchClicked += () => RestartGame();
         ui.OnQuitClicked += () => QuitToMenu();
@@ -98,6 +122,99 @@ public class GameController : MonoBehaviour
         ui.playerManagers = playerManagers;
     }
 
+    private string TypeKey(int i)    => $"slot{i}_type";
+    private string PlayerKey(int i)  => $"slot{i}_player";
+    private string BotNameKey(int i) => $"slot{i}_botName";
+
+    private List<PlayerState> BuildPlayersFromOnlineLobby()
+    {
+        var room = PhotonNetwork.CurrentRoom;
+        if (room == null)
+        {
+            Debug.LogWarning("GameController: no Photon room, falling back to local players.");
+            // fallback to 4 local players
+            var fallback = new List<PlayerState>();
+            for (int i = 0; i < playerCount; i++)
+            {
+                bool isBot = i != localPlayerId;
+                // Offline: slot owner "0", bots for all but localPlayerId
+                fallback.Add(new PlayerState(i, actorNumber: 0, isBot: isBot));
+            }
+            return fallback;
+        }
+
+        var props = room.CustomProperties;
+        var players = new List<PlayerState>();
+        playerNames.Clear();
+        localPlayerId = -1;
+
+        // Go through 4 slots in order. PlayerState.id == slotIndex
+        for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+        {
+            int type = (int)SlotType.Empty;
+            if (props.TryGetValue(TypeKey(slotIndex), out var typeObj))
+                type = (int)typeObj;
+
+            if (type == (int)SlotType.Empty) // skip empty slots
+                continue;
+
+            PlayerState player;
+            string displayName;
+
+            if (type == (int)SlotType.Bot) // Bots
+            {
+                displayName = props.TryGetValue(BotNameKey(slotIndex), out var nameObj)
+                    ? (string)nameObj
+                    : $"Bot {slotIndex + 1}";
+
+                player = new PlayerState(slotIndex, actorNumber: -1, isBot: true);
+            }
+            else // Humans
+            {
+                int actorNumber = -1;
+                if (props.TryGetValue(PlayerKey(slotIndex), out var actorObj))
+                    actorNumber = (int)actorObj;
+
+                Player photonPlayer = null;
+                foreach (var p in PhotonNetwork.PlayerList)
+                {
+                    if (p.ActorNumber == actorNumber)
+                    {
+                        photonPlayer = p;
+                        break;
+                    }
+                }
+
+                displayName = photonPlayer != null ? photonPlayer.NickName : $"Player {slotIndex + 1}";
+
+                bool isLocal = photonPlayer != null &&
+                            photonPlayer.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber;
+
+                if (isLocal)
+                    localPlayerId = slotIndex;
+
+                player = new PlayerState(slotIndex, actorNumber: actorNumber, isBot: false);
+            }
+
+            players.Add(player);
+            playerNames.Add(displayName);
+        }
+
+        playerCount = players.Count;
+
+        if (localPlayerId < 0)
+            Debug.LogWarning("GameController: localPlayerId not found from lobby slots; defaulting to 0.");
+
+        // Keep UI in sync
+        ui.localPlayerId     = localPlayerId;
+        ui.showOpponentHands = showOpponentHands;
+        ui.manualControlBots = manualControlBots;
+
+        Debug.Log($"Created {players.Count} ONLINE players; localPlayerId={localPlayerId}");
+
+        return players;
+    }
+    
     // Wiring of game state to UI and input
     private void SetupUI()
     {
@@ -143,11 +260,6 @@ public class GameController : MonoBehaviour
                 targetPlayerId = turn.pendingTargetId,
                 guessValue = guess
             };
-            game.lastGuardSourcePlayerId = playerId;
-            game.lastGuardTargetPlayerId = turn.pendingTargetId;
-            game.lastGuardGuessType = (CardType)guess;
-            Debug.Log($"Player {playerId + 1} guessed Player {turn.pendingTargetId + 1} has a {(CardType)guess}");
-            game.lastGuardGuessCorrect = game.lastGuardGuessType == game.players[turn.pendingTargetId].hand[0].type;
             ProcessCommand(cmd);
         };
     }
@@ -155,17 +267,27 @@ public class GameController : MonoBehaviour
     // NETWORKING ENTRY POINT
     private void ProcessCommand(PlayerCommand cmd)
     {
-        if (isMultiplayer)
+        if (!isMultiplayer)
         {
-            // TODO: Send command to Photon server
+            // Local execution
+            ExecuteCommand(cmd);
             return;
         }
 
-        // Local execution
-        ExecuteCommand(cmd);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // Host executes all commands
+            ApplyCommandAsMaster(cmd);
+        }
+        else
+        {
+            // Client input: submit to master only
+            photonView.RPC("Rpc_SubmitCommand", RpcTarget.MasterClient,
+                        (int)cmd.type, cmd.playerId, cmd.cardIndex, cmd.targetPlayerId, cmd.guessValue);
+        }
     }
 
-    // Called locally OR when receiving network command
+    // Called locally
     public void ExecuteCommand(PlayerCommand cmd)
     {
         if (turn.ExecuteCommand(game, cmd, rules, out string error))
@@ -179,6 +301,110 @@ public class GameController : MonoBehaviour
             }
     }
 
+    [PunRPC]
+    private void Rpc_SubmitCommand(int type, int playerId, int cardIndex, int targetId, int guess)
+    {
+        // This runs only on the master (we always send to MasterClient)
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        var cmd = new PlayerCommand
+        {
+            type           = (CommandType)type,
+            playerId       = playerId,
+            cardIndex      = cardIndex,
+            targetPlayerId = targetId,
+            guessValue     = guess
+        };
+
+        ApplyCommandAsMaster(cmd);
+    }
+
+    [PunRPC]
+    private void Rpc_ApplyCommand(int type, int playerId, int cardIndex, int targetId, int guess)
+    {
+        // This runs on non‑masters
+        if (PhotonNetwork.IsMasterClient)
+            return;
+
+        var cmd = new PlayerCommand
+        {
+            type           = (CommandType)type,
+            playerId       = playerId,
+            cardIndex      = cardIndex,
+            targetPlayerId = targetId,
+            guessValue     = guess
+        };
+
+        ExecuteCommand(cmd);
+    }
+
+    [PunRPC]
+    private void Rpc_StartRound(int seed)
+    {
+        // Called on ALL clients (including master)
+        game.seed = seed;
+        turn.StartNewRound(game, deckTemplate, seed);
+        BeginTurnForCurrentPlayer();
+    }
+
+    [PunRPC]
+    private void Rpc_TriggerCardAnimation(int playerId, int targetId, int cardTypeInt, int guessValue)
+    {
+        // All clients play the animation
+        var player = game.players[playerId];
+        var target = targetId >= 0 ? game.players[targetId] : null;
+        var card = player.discardPile.Count > 0 ? player.discardPile[player.discardPile.Count - 1] : null;
+        
+        if (card == null || (CardType)cardTypeInt != card.type)
+        {
+            // Fallback: reconstruct CardData from type
+            card = deckTemplate.Find(c => c.type == (CardType)cardTypeInt);
+        }
+
+        // Sync guard guess state for animation
+        if (card != null && card.type == CardType.Guard && target != null && guessValue > 0)
+        {
+            game.lastGuardSourcePlayerId = player.id;
+            game.lastGuardTargetPlayerId = target.id;
+            game.lastGuardGuessType = (CardType)guessValue;
+            game.lastGuardGuessCorrect = game.lastGuardGuessType == target.hand[0].type;
+        }
+        
+        if (card != null)
+            StartCoroutine(HandleCardEffectResolvedRoutine(player, target, card));
+    }
+    
+    private void ApplyCommandAsMaster(PlayerCommand cmd)
+    {
+        // Master updates its own state
+        ExecuteCommand(cmd);
+
+        // Then tell all others to apply the same command
+        photonView.RPC("Rpc_ApplyCommand", RpcTarget.Others,
+            (int)cmd.type, cmd.playerId, cmd.cardIndex, cmd.targetPlayerId, cmd.guessValue);
+    }
+
+    public void StartNewRoundNetworked()
+    {
+        if (!isMultiplayer)
+        {
+            // Offline / local game
+            int seed = Random.Range(int.MinValue, int.MaxValue);
+            game.seed = seed;
+            turn.StartNewRound(game, deckTemplate, seed);
+            BeginTurnForCurrentPlayer();
+            return;
+        }
+
+        // Only master decides and broadcasts the seed
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        int newSeed = Random.Range(int.MinValue, int.MaxValue);
+        photonView.RPC(nameof(Rpc_StartRound), RpcTarget.All, newSeed);
+    }
+
     private void BeginTurnForCurrentPlayer()
     {
         turn.StartTurn(game);
@@ -187,8 +413,12 @@ public class GameController : MonoBehaviour
         var currentPlayer = game.CurrentPlayer;
 
         // If it's a bot (and not manually controlled), have it start its turn
-        if (!currentPlayer.isLocalPlayer && !manualControlBots)
+        if (IsBot(currentPlayer) && !manualControlBots)
         {
+            // Only master should drive bots
+            if (isMultiplayer && !PhotonNetwork.IsMasterClient)
+                return;
+            
             if (botRoutine != null) StopCoroutine(botRoutine);
             botRoutine = StartCoroutine(RunBotTurn());
         }
@@ -202,7 +432,7 @@ public class GameController : MonoBehaviour
 
         foreach (var cmd in botCommands)
         {
-            ExecuteCommand(cmd);
+            ProcessCommand(cmd);
             yield return new WaitForSeconds(botDelay); // Delay between bot commands (e.g., play card, then select target, then select guess)
         }
 
@@ -213,7 +443,20 @@ public class GameController : MonoBehaviour
         if (ui == null)
             return;
         
-        StartCoroutine(HandleCardEffectResolvedRoutine(player, target, card));
+        // In multiplayer, only master triggers animations for all
+        if (isMultiplayer && PhotonNetwork.IsMasterClient)
+        {
+            int targetId = target != null ? target.id : -1;
+            int guessValue = (card.type == CardType.Guard) ? (int)game.lastGuardGuessType : 0;
+
+            photonView.RPC("Rpc_TriggerCardAnimation", RpcTarget.All,
+                player.id, targetId, (int)card.type, guessValue);
+        }
+        else if (!isMultiplayer)
+        {
+            // Offline: run locally
+            StartCoroutine(HandleCardEffectResolvedRoutine(player, target, card));
+        }
     }
     private IEnumerator HandleCardEffectResolvedRoutine(PlayerState player, PlayerState target, CardData card)
     {
@@ -221,14 +464,14 @@ public class GameController : MonoBehaviour
 
         // Clone the player and target objects (if exists)
         // This prevents issues with the card effect being resolved before the animation plays
-        PlayerState playerClone = new PlayerState(player.id, player.isLocalPlayer, new List<CardData>(player.hand))
+        PlayerState playerClone = new PlayerState(player.id, player.actorNumber, player.isBot, new List<CardData>(player.hand))
         {
             isEliminated = player.isEliminated
         };
         PlayerState targetClone = null;
         if (target != null)
         {
-            targetClone = new PlayerState(target.id, target.isLocalPlayer, new List<CardData>(target.hand))
+            targetClone = new PlayerState(target.id, target.actorNumber, target.isBot, new List<CardData>(target.hand))
             {
                 isEliminated = target.isEliminated
             };
@@ -331,14 +574,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void StartNewRound()
-    {
-        turn.StartNewRound(game, deckTemplate);
-        
-        // Start first turn
-        BeginTurnForCurrentPlayer();
-    }
-
     private void BuildPlayerObjects()
     {
         if (playersList == null)
@@ -364,6 +599,16 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public bool IsLocalOwner(PlayerState p)
+    {
+        if (p == null) return false;
+        if (p.isBot) return false;
+        if (!PhotonNetwork.InRoom) return p.id == localPlayerId; // offline
+        if (PhotonNetwork.LocalPlayer == null) return false; // safety check
+        return p.actorNumber == PhotonNetwork.LocalPlayer.ActorNumber;
+    }
+    private bool IsBot(PlayerState p) => p.isBot;
+
     public void RestartGame()
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene(
@@ -372,6 +617,8 @@ public class GameController : MonoBehaviour
     
     public void QuitToMenu()
     {
+        if (PhotonNetwork.InRoom)
+            PhotonNetwork.LeaveRoom();
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
     }
     
