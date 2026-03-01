@@ -100,9 +100,24 @@ public class UIController : MonoBehaviour
         ClearChildren(currentPlayerContainer);
         ClearChildren(opponentsContainer);
 
+        // helper to get display name from GameContrroller
+        string GetDisplayName(int playerId)
+        {
+            var gc = GameController.Instance;
+            if (gc != null &&
+                gc.playerNames != null &&
+                playerId >= 0 &&
+                playerId < gc.playerNames.Count &&
+                !string.IsNullOrWhiteSpace(gc.playerNames[playerId]))
+            {
+                return gc.playerNames[playerId];
+            }
+            return $"Player {playerId + 1}";
+        }
+
         // Build player area
         playerArea = Instantiate(playerAreaPrefab, currentPlayerContainer);
-        playerArea.Bind(game.players[localPlayerId], $"Player {localPlayerId + 1}");
+        playerArea.Bind(game.players[localPlayerId], GetDisplayName(localPlayerId));
 
         // Hook card interactions to views and convert to events
         if (playerArea.handView != null)
@@ -154,7 +169,7 @@ public class UIController : MonoBehaviour
         {
             if (i == localPlayerId) continue;
             var oppView = Instantiate(opponentAreaPrefab, opponentsContainer);
-            oppView.Bind(game.players[i], $"Player {i + 1}");
+            oppView.Bind(game.players[i], GetDisplayName(i));
     
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
@@ -425,7 +440,7 @@ public class UIController : MonoBehaviour
             case CardType.Baron:
                 if (target != null && source.hand.Count > 0 && target.hand.Count > 0)
                 {
-                    if (source.id == target.id)
+                    if (source.id == target.id) // don't show effect when targeting self with no effect
                         yield break;
                     
                     CardData sourceCard = null;
@@ -469,6 +484,9 @@ public class UIController : MonoBehaviour
                 // Show target back at first, then Spy reveals the target's card
                 if (target != null && source.hand.Count > 0 && target.hand.Count > 0)
                 {
+                    if (source.id == target.id) // don't show effect when targeting self with no effect
+                        yield break;
+
                     // Find the spy in hand
                     CardData sourceCard = null;
                     for (int i = 0; i < source.hand.Count; i++)
@@ -501,6 +519,9 @@ public class UIController : MonoBehaviour
             case CardType.Guard:
                 if (target != null && source.hand.Count > 0 && target.hand.Count > 0)
                 {
+                    if (source.id == target.id) // don't show effect when targeting self with no effect
+                        yield break;
+
                     // Find the guard in hand
                     CardData sourceCard = null;
                     for (int i = 0; i < source.hand.Count; i++)
@@ -511,7 +532,6 @@ public class UIController : MonoBehaviour
                         }
                     }
                     CardData targetCard = target.hand[target.hand.Count - 1];
-                    bool isLocalGuardOwner = source.id == localPlayerId;
 
                     // Phase 1: Guard shown, target hidden
                     yield return AnimateCompareCards(
@@ -519,13 +539,13 @@ public class UIController : MonoBehaviour
                         sourceCard, targetCard,
                         revealSource: true,
                         revealTarget: false,
-                        destroyAtEnd: !isLocalGuardOwner); // Only reveal to guard player
+                        destroyAtEnd: false);
                     
                     // Phase 2: Check if guess was correct and show result
                     bool guessCorrect = game.lastGuardGuessType == targetCard.type;
                     
                     // Phase 3: Guard reveals target card
-                    if (guessCorrect && isLocalGuardOwner)
+                    if (guessCorrect)
                     {                        
                         yield return cardPlayAnimator.RevealLastCompare(
                             revealSource: true,
