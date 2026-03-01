@@ -4154,7 +4154,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardPlayAnimator
   cardViewPrefab: {fileID: 1472067890161114617, guid: 45d1d725766072e4a95ee3c4b428a15d, type: 3}
   handmaidShieldPrefab: {fileID: 2434154922797512230, guid: 76d855f025c567e458b5a8d10dc43c50, type: 3}
-  singleCardPlayedContainer: {fileID: 1305877845}
   sourceCardPlayedContainer: {fileID: 656062922}
   targetCardPlayedContainer: {fileID: 406991366}
   flyDuration: 0.5
@@ -4289,6 +4288,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1867866947}
   - component: {fileID: 1867866946}
+  - component: {fileID: 1867866948}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -4354,6 +4354,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1867866948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867866945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &2040549309
 GameObject:
   m_ObjectHideFlags: 0
@@ -4526,6 +4548,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2046241101}
   m_CullTransparentMesh: 1
+--- !u!1 &2049985716
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2049985718}
+  - component: {fileID: 2049985717}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2049985717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049985716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd81c062e5db7d647a037e122f4d3dfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
+  gameVersion: 1.0
+  roomNamePrefix: GameRoom
+--- !u!4 &2049985718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049985716}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1249.6301, y: 918.7522, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2068022633
 GameObject:
   m_ObjectHideFlags: 0
@@ -4614,3 +4682,4 @@ SceneRoots:
   - {fileID: 338817739}
   - {fileID: 1080046780}
   - {fileID: 79135382}
+  - {fileID: 2049985718}
