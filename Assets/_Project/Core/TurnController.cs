@@ -42,8 +42,10 @@ public class TurnController
         }
     }
 
-    public void StartNewRound(GameState game, List<CardData> deckTemplate)
+    public void StartNewRound(GameState game, List<CardData> deckTemplate, int seed)
     {
+        var rng = new System.Random(seed);
+        
         // Reset player states
         foreach (var player in game.players)
         {
@@ -54,7 +56,6 @@ public class TurnController
             player.isEliminated = false;
             // Tokens persist across rounds
         }
-
         game.ClearSpyReveals();
         
         // Reset turn controller state
@@ -66,7 +67,7 @@ public class TurnController
         var newDeck = new List<CardData>(deckTemplate);
         for (int i = newDeck.Count - 1; i > 0; i--)
         {
-            int j = UnityEngine.Random.Range(0, i + 1);
+            int j = rng.Next(0, i + 1);
             (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
         }
         foreach (var card in newDeck)
@@ -85,7 +86,7 @@ public class TurnController
         }
 
         // Pick random starting player and reset turn number
-        game.currentPlayerIndex = UnityEngine.Random.Range(0, game.players.Count);
+        game.currentPlayerIndex = rng.Next(0, game.players.Count);
         game.turnNumber = 1;
 
         // Clear log and start logging
@@ -192,6 +193,14 @@ public class TurnController
         error = null;
         if (Phase != TurnPhase.SelectGuess) { error = "Not in guess selection phase."; return false; }
         if (pendingCardIndex < 0 || pendingTargetId < 0) { error = "No pending Guard to play."; return false; }
+
+        // Guard state is set here so it's synchronized across all clients
+        game.lastGuardSourcePlayerId = cmd.playerId;
+        game.lastGuardTargetPlayerId = pendingTargetId;
+        game.lastGuardGuessType = (CardType)cmd.guessValue;
+      
+        var target = game.players[pendingTargetId];
+        game.lastGuardGuessCorrect = game.lastGuardGuessType == target.hand[0].type;
 
         return ResolveCard(game, pendingCardIndex, pendingTargetId, cmd.guessValue);
     }
