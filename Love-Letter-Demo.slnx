@@ -6,6 +6,7 @@
   <Project Path="Unity.2D.Aseprite.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
+  <Project Path="PhotonChat.csproj" />
   <Project Path="Unity.Multiplayer.Center.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.Mathematics.csproj" />
@@ -25,6 +26,7 @@
   <Project Path="Unity.Burst.csproj" />
   <Project Path="Unity.Services.Core.Environments.Editor.csproj" />
   <Project Path="PsdPlugin.csproj" />
+  <Project Path="PhotonRealtime.csproj" />
   <Project Path="Unity.2D.Animation.Editor.csproj" />
   <Project Path="Unity.2D.SpriteShape.Editor.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
@@ -33,6 +35,7 @@
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="Unity.TextMeshPro.Editor.csproj" />
   <Project Path="Unity.Notifications.Android.csproj" />
+  <Project Path="PhotonUnityNetworking.Editor.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
   <Project Path="Unity.2D.SpriteShape.Runtime.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
@@ -43,6 +46,7 @@
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.Services.Core.Editor.csproj" />
   <Project Path="Unity.Services.Core.Configuration.Editor.csproj" />
+  <Project Path="PhotonUnityNetworking.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.PerformanceTesting.csproj" />
   <Project Path="Unity.Services.Core.csproj" />
@@ -54,6 +58,7 @@
   <Project Path="Unity.TextMeshPro.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Runtime.csproj" />
   <Project Path="Unity.2D.IK.Editor.csproj" />
+  <Project Path="PhotonUnityNetworking.Demos.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.001.csproj" />
   <Project Path="Unity.2D.Aseprite.Common.csproj" />
   <Project Path="Unity.Burst.Editor.csproj" />
@@ -61,11 +66,13 @@
   <Project Path="Unity.2D.Sprite.AIIntegration.Editor.csproj" />
   <Project Path="Unity.AdaptivePerformance.Google.Android.Editor.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.csproj" />
+  <Project Path="PhotonUnityNetworking.Utilities.PhotonPlayer.Editor.csproj" />
   <Project Path="Unity.2D.PixelPerfect.csproj" />
   <Project Path="Unity.Notifications.csproj" />
   <Project Path="Unity.AdaptivePerformance.UI.Editor.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
   <Project Path="Unity.2D.PixelPerfect.Editor.csproj" />
+  <Project Path="PhotonUnityNetworking.Utilities.csproj" />
   <Project Path="Unity.2D.Common.Runtime.csproj" />
   <Project Path="Unity.Services.Core.Analytics.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
@@ -81,6 +88,8 @@
   <Project Path="Unity.Services.Core.Threading.csproj" />
   <Project Path="Unity.Services.Core.Device.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
+  <Project Path="PunDemos.DemoHubEditor.csproj" />
+  <Project Path="PunDemos.DemoSlotcarEditor.csproj" />
   <Project Path="Unity.Profiling.Core.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
   <Project Path="Unity.AdaptivePerformance.Simulator.Editor.csproj" />
@@ -91,6 +100,7 @@
   <Project Path="Unity.AdaptivePerformance.Simulator.Google.Extension.Editor.csproj" />
   <Project Path="Unity.Services.Core.Environments.csproj" />
   <Project Path="Unity.Collections.Editor.csproj" />
+  <Project Path="PhotonUnityNetworking.Utilities.Culling.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.csproj" />
   <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj" />
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
