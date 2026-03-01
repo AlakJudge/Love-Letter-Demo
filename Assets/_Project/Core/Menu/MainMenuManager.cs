@@ -3,8 +3,13 @@ using UnityEngine;
 public class MainMenuManager : MonoBehaviour
 {
     // Load Game Scene
-    public void StartGame()
+    public void StartSinglePlayerGame()
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+    }
+
+    public void StartOnlineLobby()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("OnlineRoomsScene");
     }
 }
