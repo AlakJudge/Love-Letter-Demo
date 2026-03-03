@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public static class BotController
+public static class BotTurnController
 {
     // Returns a sequence of commands for the bot to execute this turn
     public static List<PlayerCommand> GetTurnCommands(GameState game, int botId, RuleValidation rules)

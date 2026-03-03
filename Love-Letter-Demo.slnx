@@ -38,10 +38,10 @@
   <Project Path="PhotonUnityNetworking.Editor.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
   <Project Path="Unity.2D.SpriteShape.Runtime.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.CloudBuild.Editor.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.Services.Core.Configuration.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="ScriptablePacker.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.Services.Core.Editor.csproj" />

@@ -837,7 +837,7 @@ GameObject:
   - component: {fileID: 999558475889536469}
   - component: {fileID: 7441681834857655791}
   m_Layer: 5
-  m_Name: PlayerAreaPanel
+  m_Name: PlayerAreaPanelPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
