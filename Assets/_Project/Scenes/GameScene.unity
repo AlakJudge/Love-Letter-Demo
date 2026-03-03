@@ -1707,6 +1707,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 656062921}
   m_CullTransparentMesh: 1
+--- !u!1 &676491080
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 676491082}
+  - component: {fileID: 676491081}
+  m_Layer: 0
+  m_Name: CardEffectAnimationController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &676491081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 676491080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b887347d0875b84992e07d29e260cd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardEffectAnimationController
+  cardPlayAnimator: {fileID: 1724929612}
+  localPlayerId: 0
+--- !u!4 &676491082
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 676491080}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 970.908, y: 785.35376, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &725715813
 GameObject:
   m_ObjectHideFlags: 0
@@ -3548,7 +3594,6 @@ MonoBehaviour:
   discardPileZoomView: {fileID: 537929032}
   playerAreaPrefab: {fileID: 7441681834857655791, guid: f2a184d98b831fe4690545e98f66dc41, type: 3}
   opponentAreaPrefab: {fileID: 4350909882609627610, guid: be04b80b679eb4741afe3cf1a4ea042d, type: 3}
-  cardPlayAnimator: {fileID: 1724929612}
   localPlayerId: 0
   showOpponentHands: 0
   manualControlBots: 0
@@ -4330,6 +4375,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 38e3061c966c9fb469c4af28fb21bbf2, type: 2}
   - {fileID: 11400000, guid: 16f5a8f9b16fbf147bb3148c81dc0066, type: 2}
   playerNames: []
+  cardEffectAnimationController: {fileID: 676491081}
   showOpponentHands: 0
   manualControlBots: 0
   playersList: {fileID: 338817739}
@@ -4676,10 +4722,11 @@ SceneRoots:
   m_Roots:
   - {fileID: 1316576506}
   - {fileID: 1842202008}
-  - {fileID: 1444870930}
-  - {fileID: 1867866947}
   - {fileID: 218520423}
   - {fileID: 338817739}
-  - {fileID: 1080046780}
   - {fileID: 79135382}
+  - {fileID: 1867866947}
+  - {fileID: 1444870930}
   - {fileID: 2049985718}
+  - {fileID: 676491082}
+  - {fileID: 1080046780}
