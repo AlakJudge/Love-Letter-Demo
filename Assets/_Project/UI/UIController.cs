@@ -16,6 +16,7 @@ public class UIController : MonoBehaviour
     public Button discardPileExpandButtonOpponents;
     public Button rematchButton;
     public Button quitButton;
+    public Button cancelCardSelectionButton; // full screen button behind UI
 
     [Header("Other UI Elements")]
     public TransitionView transitionView;
@@ -37,6 +38,7 @@ public class UIController : MonoBehaviour
     private PlayerView playerArea;
     private OpponentView[] opponentAreas;
     private GuardChoiceView guardChoiceView;
+    private CardView selectedCardView;
     
     // Events to send card index
     public event Action<int, int> OnPlayCard;        // playerId, cardIndex
@@ -45,6 +47,7 @@ public class UIController : MonoBehaviour
     public event Action OnRoundContinueClicked;
     public event Action OnRematchClicked;
     public event Action OnQuitClicked;
+    public event Action OnPlayCardCancelled;
 
     // Getters for views that need to be accessed by GameController and CardEffectAnimationController
     public PlayerView GetPlayerArea() => playerArea;
@@ -56,6 +59,9 @@ public class UIController : MonoBehaviour
 
         if (quitButton != null)
             quitButton.onClick.AddListener(() => OnQuitClicked?.Invoke());
+
+        if (cancelCardSelectionButton != null)
+            cancelCardSelectionButton.onClick.AddListener(CancelCardSelection);
 
         // Close discard pile zoom when full-screen button is clicked
         if (discardPileZoomExitButton != null)
@@ -124,6 +130,11 @@ public class UIController : MonoBehaviour
                 int cardIndex = game.CurrentPlayer.hand.IndexOf(card);
                 if (cardIndex >= 0)
                 {
+                    // Find current view and mark it
+                    selectedCardView = playerArea.handView.FindViewForCard(card);
+                    if (selectedCardView != null)
+                        selectedCardView.SetSelected(true);
+
                     OnPlayCard?.Invoke(game.CurrentPlayer.id, cardIndex);
                 }
             };
@@ -384,5 +395,31 @@ public class UIController : MonoBehaviour
             int opponentIndex = playerIndex > localPlayerId ? playerIndex - 1 : playerIndex;
             opponentAreas[opponentIndex].SetName(name);
         }
+    }
+
+    public void highlightSelectedCard()
+    {
+        if (selectedCardView != null)
+            selectedCardView.SetSelected(true);
+    }
+
+    public void CancelCardSelection()
+    {
+        ClearCardSelection();
+        DisableTargeting();
+        HideGuardChoice();
+
+        OnPlayCardCancelled?.Invoke();
+    }
+    
+    public void ClearCardSelection()
+    {
+        if (cancelCardSelectionButton != null)
+            cancelCardSelectionButton.gameObject.SetActive(false);
+
+        if (selectedCardView != null)
+            selectedCardView.SetSelected(false);
+
+        selectedCardView = null;
     }
 }
