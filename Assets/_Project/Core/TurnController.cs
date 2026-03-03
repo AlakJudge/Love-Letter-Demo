@@ -274,4 +274,11 @@ public class TurnController
         return type == CardType.Guard || type == CardType.Spy || type == CardType.Baron 
             || type == CardType.Prince || type == CardType.King;
     }
+
+    public void ResetPhase()
+    {
+        Phase = TurnPhase.ChooseCard;
+        pendingCardIndex = -1;
+        pendingTargetId = -1;
+    }
 }
