@@ -19,6 +19,24 @@ public class CardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private bool isPointerDown;
     private bool longPressTriggered;
     private float pointerDownTime;
+    private Outline outline;
+
+    private void Awake()
+    {
+        outline = GetComponent<Outline>();
+        if (outline != null)
+            outline.enabled = false; // Starts disabled
+    }
+
+    // Toggle outline effect for when a card is selected
+    public void SetSelected(bool isSelected)
+    {
+        if (outline == null)
+            outline = GetComponent<Outline>();
+            
+        if (outline != null)
+            outline.enabled = isSelected;
+    }
 
     public void Set(CardData card)
     {
