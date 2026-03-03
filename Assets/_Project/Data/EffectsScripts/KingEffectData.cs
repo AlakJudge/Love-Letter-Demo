@@ -11,6 +11,9 @@ public class KingEffect : CardEffect
             Debug.Log("No valid targets for King. No effect.");
             return;
         }
+
+        game.ClearSpyRevealsForPlayer(target.id);
+
         // Swap hands with target
         var sourceCard = source.hand[0];
         var targetCard = target.hand[0];
