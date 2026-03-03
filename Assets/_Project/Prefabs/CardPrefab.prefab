@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1472067890161114617}
   - component: {fileID: 184520620527575095}
   - component: {fileID: 3273146323989544234}
+  - component: {fileID: -6579080424570183170}
   m_Layer: 5
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -91,8 +92,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardView
   image: {fileID: 2787524145215606430}
-  label: {fileID: 0}
   button: {fileID: 184520620527575095}
+  boundCard: {fileID: 0}
+  isRevealed: 0
+  longPressTime: 0.4
 --- !u!114 &184520620527575095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117,7 +120,7 @@ MonoBehaviour:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -157,3 +160,18 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: 0
   m_LayoutPriority: 100
+--- !u!114 &-6579080424570183170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3878465382411716493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0, g: 1, b: 0.99999976, a: 0.5}
+  m_EffectDistance: {x: 6, y: 6}
+  m_UseGraphicAlpha: 0
