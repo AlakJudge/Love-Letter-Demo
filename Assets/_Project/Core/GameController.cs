@@ -104,7 +104,13 @@ public class GameController : MonoBehaviour
         rules = new RuleValidation();
 
         // Subscribe to turn events
-        turn.OnNeedTargetSelection += () => ui.EnableTargeting();
+        turn.OnNeedTargetSelection += () => 
+        {
+            ui.EnableTargeting();
+            if (ui.cancelCardSelectionButton != null)
+                ui.cancelCardSelectionButton.gameObject.SetActive(true);
+        };
+                
         turn.OnNeedGuessSelection  += () => // Only show guard choice view when played by local player
         {
             var current = game.CurrentPlayer;
@@ -230,6 +236,16 @@ public class GameController : MonoBehaviour
         if (cardEffectAnimationController != null)
             cardEffectAnimationController.Bind(ui, game, localPlayerId, ui.GetPlayerArea());
 
+        // Handle card cancellation - reset phase to ChooseCard
+        ui.OnPlayCardCancelled += () =>
+        {
+            if (turn.Phase == TurnPhase.SelectTarget || turn.Phase == TurnPhase.SelectGuess)
+            {
+                turn.ResetPhase();
+                ui.RefreshAll();
+            }
+        };
+
         // Subscribe to UI input and convert to commands
         ui.OnPlayCard += (playerId, cardIndex) => 
         {
@@ -304,7 +320,10 @@ public class GameController : MonoBehaviour
             }
             else
             {
-                ui.RefreshAll();
+                if (!(turn.Phase == TurnPhase.SelectTarget || turn.Phase == TurnPhase.SelectGuess))
+                {
+                    ui.RefreshAll();
+                }
             }
     }
 
@@ -552,6 +571,7 @@ public class GameController : MonoBehaviour
 
     private void ProcessTurnComplete()
     {
+        ui.ClearCardSelection();
         ui.DisableTargeting();
         ui.HideGuardChoice();
         game.AdvanceToNextPlayer();
