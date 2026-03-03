@@ -12,7 +12,7 @@ TagManager:
   - Water
   - UI
   - Overlay
-  - 
+  - BehindUI
   - 
   - 
   - 
@@ -43,6 +43,15 @@ TagManager:
     locked: 0
   - name: LogPanel
     uniqueID: 3453097959
+    locked: 0
+  - name: BehindUI
+    uniqueID: 2215575685
+    locked: 0
+  - name: UI
+    uniqueID: 1999568823
+    locked: 0
+  - name: Overlay
+    uniqueID: 132407481
     locked: 0
   m_RenderingLayers:
   - Default
