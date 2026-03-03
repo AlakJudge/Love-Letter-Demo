@@ -25,6 +25,9 @@ public class GameController : MonoBehaviour
     public List<CardData> deckTemplate = new(); 
     public List<string> playerNames = new();
 
+    [Header("Animation")]
+    [SerializeField] private CardEffectAnimationController cardEffectAnimationController;
+    
     [Header("Debug")]
     public bool showOpponentHands = false; 
     public bool manualControlBots = false;
@@ -222,6 +225,10 @@ public class GameController : MonoBehaviour
         ui.showOpponentHands = showOpponentHands;
         ui.manualControlBots = manualControlBots;
         ui.Bind(game);
+
+        // Bind animation controller
+        if (cardEffectAnimationController != null)
+            cardEffectAnimationController.Bind(ui, game, localPlayerId, ui.GetPlayerArea());
 
         // Subscribe to UI input and convert to commands
         ui.OnPlayCard += (playerId, cardIndex) => 
@@ -485,11 +492,12 @@ public class GameController : MonoBehaviour
         if (countessConflict)
         {
             // optionally still show the Countess warning UI
-            yield return ui.ShowCardEffect(playerClone, targetClone, card);
+            yield return cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card);
         }
         else
         {
-            yield return ui.AnimateCardPlay(playerClone, card, () => ui.ShowCardEffect(playerClone, targetClone, card));
+            yield return cardEffectAnimationController.AnimateCardPlay(playerClone, card, () 
+                => cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card));
         }
         isAnimatingCardPlay = false;
         TryProcessDeferredTurn();
