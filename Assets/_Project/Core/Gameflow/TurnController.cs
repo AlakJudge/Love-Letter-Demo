@@ -123,7 +123,6 @@ public class TurnController
         }
         
         pendingCardIndex = cmd.cardIndex;  
-        Log(game, $"Player {game.CurrentPlayer.id + 1} played {card.type}.");
 
         // Check if card needs a target
         if (CardNeedsTarget(card.type))
@@ -205,7 +204,9 @@ public class TurnController
     {
         var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
-    
+
+        Log(game, $"Player {game.CurrentPlayer.id + 1} played {card.type}.");
+
         // Invoke event for showing targeting animation for cards with targets
         PlayerState target = null;
         if (targetId >= 0)
@@ -280,6 +281,5 @@ public class TurnController
     private void Log(GameState game, string message)
     {
         OnLog?.Invoke(message, game.turnNumber);
-        Debug.Log(message);
     }
 }
