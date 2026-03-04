@@ -454,7 +454,7 @@ public class GameController : MonoBehaviour
     {
         yield return new WaitForSeconds(botDelay); // Delay between bot starts turn and plays card
 
-        var botCommands = BotController.GetTurnCommands(game, game.CurrentPlayer.id, rules);
+        var botCommands = BotTurnController.GetTurnCommands(game, game.CurrentPlayer.id, rules);
 
         foreach (var cmd in botCommands)
         {
