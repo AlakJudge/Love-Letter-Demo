@@ -1,15 +1,13 @@
-using UnityEngine;
-
 public class WinConditionChecker
 {
-    public bool CheckRoundWinCondition(GameState game, out PlayerState winner)
+    public bool CheckRoundWinCondition(GameState game, out PlayerState winner, out string logMessage)
     {
         // Check if only one player remains
         var activePlayers = game.players.FindAll(p => !p.isEliminated);
         if (activePlayers.Count == 1)
         {
             winner = activePlayers[0];
-            TurnLogger.Instance.Log($"Player {winner.id + 1} wins the round by elimination!\n---------\n", game.turnNumber);
+            logMessage = $"\n---------\nPlayer {winner.id + 1} wins the round by elimination!\n---------\n";
             return true;
         }
     
@@ -28,14 +26,15 @@ public class WinConditionChecker
                 }
             }
             winner = roundWinner;
-            TurnLogger.Instance.Log($"Player {winner.id + 1} wins the round with the highest card!\n---------\n", game.turnNumber);
+            logMessage = $"\n---------\nPlayer {winner.id + 1} wins the round with the highest card!\n---------\n";
             return true;
         }
+        logMessage = null;
         winner = null;
         return false;
     }
-    public bool CheckGameWinCondition(GameState game, out PlayerState gameWinner)
-    {
+    public bool CheckGameWinCondition(GameState game, out PlayerState gameWinner, out string logMessage)
+    {       
         // Check if winner has enough tokens to win, based on total players
         int tokensToWin = game.players.Count switch
         {
@@ -49,9 +48,11 @@ public class WinConditionChecker
             if (player.tokens >= tokensToWin)
             {
                 gameWinner = player;
+                logMessage = $"\n---------\nPlayer {gameWinner.id + 1} wins the game with {gameWinner.tokens} tokens!\n---------\n";
                 return true;
             }
         }
+        logMessage = null;
         gameWinner = null;
         return false;
     }

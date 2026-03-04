@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
-using ExitGames.Client.Photon;
 
 public class GameController : MonoBehaviour
 {
@@ -57,7 +56,7 @@ public class GameController : MonoBehaviour
 
     private Coroutine botRoutine;
 
-    // For future networking
+    // Networking
     private bool isMultiplayer = false;
     private PhotonView photonView;
 
@@ -102,6 +101,15 @@ public class GameController : MonoBehaviour
         game = new GameState(players, deck);
         turn = new TurnController();
         rules = new RuleValidation();
+
+        // Wire TurnController log events into TurnLogger
+        turn.OnLog += (message, turnNumber) =>
+        {
+            if (TurnLogger.Instance != null)
+                TurnLogger.Instance.Log(message, turnNumber);
+            else
+                Debug.Log($"[Turn {turnNumber}] {message}");
+        };
 
         // Subscribe to turn events
         turn.OnNeedTargetSelection += () => 

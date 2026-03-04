@@ -9,6 +9,8 @@ public class TurnLogger : MonoBehaviour
 
     public System.Action<string> OnLogAdded;
 
+    private int lastTurnNumber = 0;
+
     private void Awake()
     {
         if (Instance == null)
@@ -23,7 +25,16 @@ public class TurnLogger : MonoBehaviour
 
     public void Log(string message, int turnNumber)
     {
-        string timestamp = $"[Turn {turnNumber}] {message}";
+        // If we moved to a new turn, insert a separator line first
+        if (turnNumber != lastTurnNumber)
+        {
+            string separator = $"\n----- Turn {turnNumber} -----\n";
+            logEntries.Add(separator);
+            OnLogAdded?.Invoke(separator);
+            
+            lastTurnNumber = turnNumber;
+        }
+        string timestamp = $"{message}";
         logEntries.Add(timestamp);
         Debug.Log(timestamp);
         OnLogAdded?.Invoke(timestamp);
@@ -34,5 +45,6 @@ public class TurnLogger : MonoBehaviour
     public void Clear()
     {
         logEntries.Clear();
+        lastTurnNumber = 0;
     }
 }
