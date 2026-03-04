@@ -8,7 +8,7 @@ public class HandView : MonoBehaviour
     public Transform container; 
     public CardView cardPrefab;
 
-    public event Action<CardData> OnCardClicked;
+    public event Action<CardData, int> OnCardClicked; // Pass the card and its index in hand
     public event Action<CardData> OnCardLongPressed;
     public event Action<CardData> OnCardReleased;
 
@@ -23,8 +23,9 @@ public class HandView : MonoBehaviour
         for (int i = container.childCount - 1; i >= 0; i--)
             Destroy(container.GetChild(i).gameObject);
 
-        foreach (var card in player.hand)
+        for (int i = 0; i < player.hand.Count; i++)
         {
+            var card = player.hand[i];
             var objPrefab = card.uiPrefab != null ? card.uiPrefab : cardPrefab.gameObject;
             var view = Instantiate(objPrefab, container).GetComponent<CardView>();
             if (view == null)
@@ -33,7 +34,8 @@ public class HandView : MonoBehaviour
                 continue;
             }
             view.Set(card);
-            view.onClick = () => OnCardClicked?.Invoke(card);
+            int index = i;
+            view.onClick = () => OnCardClicked?.Invoke(card, index);
             view.onLongPress = () => OnCardLongPressed?.Invoke(card);
             view.onLongPressRelease = () => OnCardReleased?.Invoke(card);
         }
@@ -85,6 +87,14 @@ public class HandView : MonoBehaviour
                 return view;
         }
         return null;
+    }
+
+    public CardView GetViewFromIndex(int index)
+    {
+        if (container == null) return null;
+        if (index < 0 || index >= container.childCount) return null;
+
+        return container.GetChild(index).GetComponent<CardView>();
     }
 
 }

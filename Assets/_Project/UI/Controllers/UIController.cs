@@ -122,15 +122,16 @@ public class UIController : MonoBehaviour
         // Hook card interactions to views and convert to events
         if (playerArea.handView != null)
         {
-            playerArea.handView.OnCardClicked += card =>
+            playerArea.handView.OnCardClicked += (card, index) =>
             {
                 if (game.CurrentPlayer.id != localPlayerId && !manualControlBots) return;
+                
+                int cardIndex = index;
 
-                int cardIndex = game.CurrentPlayer.hand.IndexOf(card);
                 if (cardIndex >= 0)
                 {
                     // Find current view and mark it
-                    selectedCardView = playerArea.handView.FindViewForCard(card);
+                    selectedCardView = playerArea.handView.GetViewFromIndex(cardIndex);
                     if (selectedCardView != null)
                         selectedCardView.SetSelected(true);
 
@@ -185,13 +186,14 @@ public class UIController : MonoBehaviour
             // Hook opponent hand clicks if manual control enabled
             if (oppView.handView != null)
             {
-                oppView.handView.OnCardClicked += card =>
+                oppView.handView.OnCardClicked += (card, index) =>
                 {
+                    int cardIndex = index;
+
                     if (!manualControlBots) return;
                     int botPlayerId = oppView.GetPlayerId();
                     if (game.CurrentPlayer.id != botPlayerId) return;
 
-                    int cardIndex = game.players[botPlayerId].hand.IndexOf(card);
                     if (cardIndex >= 0)
                     {
                         OnPlayCard?.Invoke(botPlayerId, cardIndex);
