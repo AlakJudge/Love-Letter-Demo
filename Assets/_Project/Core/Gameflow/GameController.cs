@@ -651,7 +651,11 @@ public class GameController : MonoBehaviour
     }
     private bool IsBot(PlayerState p) => p.isBot;
 
-
+    public void ToggleInfoPanel()
+    {
+        if (ui != null)
+            ui.ToggleInfoPanel();
+    }
 
     public void ToggleFastMode()
     {

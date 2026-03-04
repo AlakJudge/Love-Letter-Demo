@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class UIController : MonoBehaviour
 {
     [Header("Containers")]
+    public Transform infoPanel;
     public Transform currentPlayerContainer;
     public Transform opponentsContainer;
     public GameObject guardChoiceContainer;
@@ -21,7 +22,7 @@ public class UIController : MonoBehaviour
     public TransitionView transitionView;
     public CardZoomView cardZoomView;
     public DiscardPileZoomView discardPileZoomView;
-
+    
     [Header("Prefabs")]
     public PlayerView playerAreaPrefab;
     public OpponentView opponentAreaPrefab;
@@ -422,5 +423,13 @@ public class UIController : MonoBehaviour
             selectedCardView.SetSelected(false);
 
         selectedCardView = null;
+    }
+
+    public void ToggleInfoPanel()
+    {
+        if (infoPanel == null) return;
+
+        bool show = !infoPanel.gameObject.activeSelf;
+        infoPanel.gameObject.SetActive(show);
     }
 }
