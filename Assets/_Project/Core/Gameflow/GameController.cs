@@ -516,7 +516,10 @@ public class GameController : MonoBehaviour
             (card.type == CardType.Prince || card.type == CardType.King) &&
             playerClone.hand.Exists(c => c.type == CardType.Countess);
 
-        if (countessConflict)
+        // Skip fly-in if trying to play princess
+        bool playingPrincess = card.type == CardType.Princess;
+
+        if (countessConflict || playingPrincess)
         {
             // optionally still show the Countess warning UI
             yield return cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card);

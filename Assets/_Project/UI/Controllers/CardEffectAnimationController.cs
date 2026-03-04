@@ -33,6 +33,20 @@ public class CardEffectAnimationController : MonoBehaviour
 
         switch (card.type)
         {
+            case CardType.Princess:
+                // If player plays princess, show a warning effect on the princess card since this will eliminate them
+                if (source.id == localPlayerId && playerArea != null)
+                {
+                    CardView princessView = playerArea.handView.FindViewForCard(card);
+                    if (princessView != null)
+                    {
+                        princessView.SetColor(Color.softRed);
+                        yield return new WaitForSeconds(animationDelay);
+                        princessView.SetColor(Color.white);
+                    }
+                }
+                ui.CancelCardSelection();
+                break;
             case CardType.Prince or CardType.King:
                 // Check if Countess is in hand
                 if (source.hand.Exists(c => c.type == CardType.Countess))

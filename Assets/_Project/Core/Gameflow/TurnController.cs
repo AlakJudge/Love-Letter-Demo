@@ -116,6 +116,15 @@ public class TurnController
         
         var card = game.CurrentPlayer.hand[cmd.cardIndex];
 
+        // Do not allow player to play Princess
+        if (card.type == CardType.Princess)
+        {
+            error = "Cannot play the Princess. Otherwise you are eliminated.";            
+            // Trigger a visual warning effect
+            OnCardEffectResolved?.Invoke(game.CurrentPlayer, null, card);
+            return false;
+        }
+
         if (!rules.HasCountessRule(game, card, out error))
         {
             OnCardEffectResolved?.Invoke(game.CurrentPlayer, null, card);
