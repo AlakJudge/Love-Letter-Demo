@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -355,5 +356,22 @@ public class CardPlayAnimator : MonoBehaviour
         lastCompareTarget  = null;
         lastSourceCardData = null;
         lastTargetCardData = null;
+    }
+
+    public void ToggleFastMode(bool isFast)
+    {
+        // If currently fast, reset to defaults. If currently normal, set to fast values.
+        if (isFast == true)
+        {
+            flyDuration = 0.2f;
+            holdDuration = 0.4f;
+            shieldFadeDuration = 0.2f;
+        }
+        else
+        {
+            flyDuration = 0.5f;
+            holdDuration = 0.8f;
+            shieldFadeDuration = 0.8f;
+        }
     }
 }

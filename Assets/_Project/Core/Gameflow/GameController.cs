@@ -26,6 +26,7 @@ public class GameController : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private CardEffectAnimationController cardEffectAnimationController;
+    [SerializeField] private CardPlayAnimator cardPlayAnimator;
     
     [Header("Debug")]
     public bool showOpponentHands = false; 
@@ -41,6 +42,8 @@ public class GameController : MonoBehaviour
     public Button rematchButton;
     public Button quitButton;
     public Button restartButton;
+    public Button infoButton;
+    public Button fastModeButton;
 
     private PlayerManager[] playerManagers;
     private GameState game;
@@ -647,6 +650,34 @@ public class GameController : MonoBehaviour
         return p.actorNumber == PhotonNetwork.LocalPlayer.ActorNumber;
     }
     private bool IsBot(PlayerState p) => p.isBot;
+
+
+
+    public void ToggleFastMode()
+    {
+        bool isFast;
+        
+        if (botDelay < 0.5f)
+        {
+            // Restore default delay
+            botDelay = 1f;
+            fastModeButton.gameObject.GetComponent<Image>().color = Color.white;
+            isFast = false;
+        }
+        else
+        { 
+            botDelay = 0.1f;
+            fastModeButton.gameObject.GetComponent<Image>().color = Color.green;
+            isFast = true;
+        }
+        // Also toggle card play animation speed
+        if (cardPlayAnimator != null)
+            cardPlayAnimator.ToggleFastMode(isFast);
+
+        // Also toggle transition speed
+        if (transitionView != null)
+            transitionView.ToggleFastMode(isFast);
+    }
 
     public void RestartGame()
     {

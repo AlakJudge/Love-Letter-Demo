@@ -7,7 +7,7 @@ public class TransitionView : MonoBehaviour
     public Transform transitionPanel;
     public TextMeshProUGUI transitionText;
 
-    public int transitionTime = 5; // seconds
+    public int transitionTime = 4; // seconds
 
     public event Action OnTransitionFinished;
 
@@ -43,5 +43,13 @@ public class TransitionView : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(transitionTime);
         HideTransition();
+    }
+
+    public void ToggleFastMode(bool isFast)
+    {
+        if (isFast)
+            transitionTime = 2;
+        else
+            transitionTime = 4;
     }
 }
