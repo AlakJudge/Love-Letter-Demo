@@ -10,11 +10,20 @@ public class OnlineRoomsManager : MonoBehaviour
     public Button joinRoomButton;
     public Button backButton;
 
+    // For storing player name in PlayerPrefs
+    const string PlayerNameKey = "PlayerName";
+
     private void Start()
     {
         createRoomButton.onClick.AddListener(OnCreateClicked);
         joinRoomButton.onClick.AddListener(OnJoinClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
+
+        // Load saved player name
+        if (PlayerPrefs.HasKey(PlayerNameKey))
+        {
+            playerNameInput.text = PlayerPrefs.GetString(PlayerNameKey);
+        }
     }
 
     private void Update()
@@ -49,6 +58,9 @@ public class OnlineRoomsManager : MonoBehaviour
         var name = playerNameInput.text.Trim();
         if (string.IsNullOrEmpty(name))
             name = string.Format("Player{0}", Random.Range(1, 1000));
+        
+        PlayerPrefs.SetString(PlayerNameKey, name);
+        PlayerPrefs.Save();
 
         PhotonNetwork.NickName = name;
 
