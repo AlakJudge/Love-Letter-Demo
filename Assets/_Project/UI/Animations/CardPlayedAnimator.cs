@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -44,6 +43,63 @@ public class CardPlayAnimator : MonoBehaviour
         }
 
         StartCoroutine(PlaySingleCardRoutine(sourceView, card));
+    }
+
+    public IEnumerator DrawCardRoutine(CardView sourceView, CardData card, RectTransform playerHand)
+    {
+        if (cardViewPrefab == null || canvas == null || sourceView == null || card == null || playerHand == null)
+        {
+            Debug.LogWarning("CardPlayAnimator: missing references, cannot play draw animation.");
+            yield break;
+        }
+
+        var canvasRect = (RectTransform)canvas.transform;
+
+        // Instantiate temp card
+        var tempCard = Instantiate(cardViewPrefab, canvasRect);
+        tempCard.onClick = null;
+        tempCard.onLongPress = null;
+        tempCard.onLongPressRelease = null;
+        
+        // Set sprites based on reveal flags
+        tempCard.ShowBack(card);
+        var tempCardRect = (RectTransform)tempCard.transform;
+        var sourceRect = (RectTransform)sourceView.transform;
+
+        // Convert source world position to local position in canvas space
+        Vector2 startLocalPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, sourceRect.position),
+            canvas.worldCamera,
+            out startLocalPos
+        );
+
+        // Convert hand area center to local position
+        Vector2 endLocalPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, playerHand.position),
+            canvas.worldCamera,
+            out endLocalPos
+        );
+        
+        tempCardRect.anchoredPosition = startLocalPos;
+
+        float t = 0f;
+        while (t < flyDuration)
+        {
+            t += Time.deltaTime;
+            float lerp = Mathf.Clamp01(t / flyDuration);
+            // Move position
+            tempCardRect.anchoredPosition = Vector2.Lerp(startLocalPos, endLocalPos, lerp);
+
+            yield return null;
+        }
+
+        tempCardRect.anchoredPosition = endLocalPos;
+
+        Destroy(tempCardRect.gameObject);
     }
     
     public IEnumerator PlaySingleCardRoutine(CardView sourceView, CardData card)
