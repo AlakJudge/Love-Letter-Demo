@@ -23,18 +23,4 @@ public class PlayerState
             this.hand.AddRange(hand);
         }
     }
-
-    public void DrawCard(Stack<CardData> deck)
-    {
-        if (deck.Count > 0)
-        {
-            var card = deck.Pop();
-            hand.Add(card);
-            Debug.Log($"Player {id + 1} drew {card.type}");
-        }
-        else
-        {
-            Debug.LogWarning($"Player {id + 1} cannot draw - deck is empty");
-        }
-    }
 }
