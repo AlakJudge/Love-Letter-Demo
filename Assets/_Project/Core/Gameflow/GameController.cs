@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon.StructWrapping;
 
 public class GameController : MonoBehaviour
 {
@@ -44,6 +45,7 @@ public class GameController : MonoBehaviour
     public Button restartButton;
     public Button infoButton;
     public Button fastModeButton;
+    public Button deckButton;
 
     private PlayerManager[] playerManagers;
     private GameState game;
@@ -128,10 +130,12 @@ public class GameController : MonoBehaviour
             if (current != null && current.id == ui.localPlayerId)
                 ui.ShowGuardChoice();
         };
+        turn.OnCardDrawn += (player, card) => StartCoroutine(AnimateLocalDraw(card));
         turn.OnRoundWin += OnRoundOver;
         turn.OnGameWin += OnGameOver;
         turn.OnTurnComplete += HandleTurnComplete;
         turn.OnCardEffectResolved += HandleCardEffectResolved;
+        
 
         ui.OnRoundContinueClicked += () => StartNewRoundNetworked();
 
@@ -140,6 +144,10 @@ public class GameController : MonoBehaviour
 
         BuildPlayerObjects();
         ui.playerManagers = playerManagers;
+
+        // Only show fast mode button in single player
+        if (fastModeButton != null)
+            fastModeButton.gameObject.SetActive(!isMultiplayer);
     }
 
     private string TypeKey(int i)    => $"slot{i}_type";
@@ -445,7 +453,6 @@ public class GameController : MonoBehaviour
     private void BeginTurnForCurrentPlayer()
     {
         turn.StartTurn(game);
-        ui.RefreshAll();
 
         var currentPlayer = game.CurrentPlayer;
 
@@ -545,7 +552,6 @@ public class GameController : MonoBehaviour
             ui.RefreshAll();
         }
 
-        // 
         if (!isAnimatingCardPlay)
         {
             if (pendingGameWinner != null)
@@ -590,6 +596,19 @@ public class GameController : MonoBehaviour
         ui.HideGuardChoice();
         game.AdvanceToNextPlayer();
         BeginTurnForCurrentPlayer();
+    }
+
+    private IEnumerator AnimateLocalDraw(CardData drawnCard)
+    {
+        if (cardPlayAnimator != null && ui != null && ui.deckCardView != null)
+        {
+            yield return cardPlayAnimator.DrawCardRoutine(
+                ui.deckCardView, 
+                drawnCard, 
+                ui.GetPlayerContainer(game.CurrentPlayer.id)
+                );
+        }
+        ui.RefreshAll(); // Ensure UI is updated after draw animation
     }
 
     private void OnRoundOver(PlayerState winner)
