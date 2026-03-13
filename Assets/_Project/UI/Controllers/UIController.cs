@@ -22,7 +22,9 @@ public class UIController : MonoBehaviour
     public TransitionView transitionView;
     public CardZoomView cardZoomView;
     public DiscardPileZoomView discardPileZoomView;
-    
+    public CardView deckCardView;
+    public TMPro.TextMeshProUGUI deckCountText;
+
     [Header("Prefabs")]
     public PlayerView playerAreaPrefab;
     public OpponentView opponentAreaPrefab;
@@ -385,6 +387,7 @@ public class UIController : MonoBehaviour
 
     public void RefreshAll()
     {
+        UpdateDeckCount(game.deck.Count);
         RefreshOpponents();
         RefreshPlayer();
     }
@@ -431,5 +434,29 @@ public class UIController : MonoBehaviour
 
         bool show = !infoPanel.gameObject.activeSelf;
         infoPanel.gameObject.SetActive(show);
+    }
+
+    public RectTransform GetPlayerContainer(int id)
+    {
+        // Local player
+        if (id == localPlayerId && currentPlayerContainer != null)
+            return (RectTransform)currentPlayerContainer;
+
+        // Look for the specific opponent view
+        if (opponentAreas != null)
+        {
+            foreach (var opp in opponentAreas)
+            {
+                if (opp != null && opp.GetPlayerId() == id)
+                    return (RectTransform)opp.transform;
+            }
+        }
+        return null;
+    }
+
+    public void UpdateDeckCount(int count)
+    {
+        if (deckCountText != null)
+            deckCountText.text = count.ToString();
     }
 }
