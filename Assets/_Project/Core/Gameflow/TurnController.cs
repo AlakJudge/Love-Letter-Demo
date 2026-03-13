@@ -7,6 +7,7 @@ public enum TurnPhase { StartTurn, Draw, ChooseCard, SelectTarget, SelectGuess, 
 public class TurnController
 {
     public TurnPhase Phase { get; private set; } = TurnPhase.StartTurn;
+    public static TurnController Instance { get; private set; }
     
     // Pending state (will be synced in multiplayer)
     public int pendingCardIndex = -1;
@@ -20,6 +21,12 @@ public class TurnController
     public event Action<PlayerState> OnGameWin;
     public event Action<PlayerState, PlayerState, CardData> OnCardEffectResolved;
     public event Action<string,int> OnLog; // message, turn number, etc. For logging purposes.
+    public event Action<PlayerState, CardData> OnCardDrawn;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
@@ -103,9 +110,17 @@ public class TurnController
 
     public void Draw(GameState game)
     {
-        game.CurrentPlayer.DrawCard(game.deck);
+        DrawCardForPlayer(game, game.CurrentPlayer);
         Log(game, $"Player {game.CurrentPlayer.id + 1} draws a card.");
         Phase = TurnPhase.ChooseCard;
+    }
+    
+    public void DrawCardForPlayer(GameState game, PlayerState player)
+    {
+        var card = game.deck.Pop();
+        player.hand.Add(card);
+
+        OnCardDrawn?.Invoke(player, card);
     }
 
     public bool ProcessPlayCard(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
@@ -287,7 +302,7 @@ public class TurnController
         pendingTargetId = -1;
     }
 
-    private void Log(GameState game, string message)
+    public void Log(GameState game, string message)
     {
         OnLog?.Invoke(message, game.turnNumber);
     }
