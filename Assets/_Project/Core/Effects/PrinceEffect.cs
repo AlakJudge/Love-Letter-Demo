@@ -5,6 +5,7 @@ public class PrinceEffect : CardEffect
 {
     public override void Resolve(GameState game, PlayerState source, PlayerState target, int? guessValue)
     {
+        
         // Target discards hand and draws a card
         var discardedCard = target.hand[0];
         target.discardPile.Add(discardedCard);
@@ -18,22 +19,20 @@ public class PrinceEffect : CardEffect
         if (discardedCard.type == CardType.Princess)
         {
             target.isEliminated = true;
-            Debug.Log($"Player {target.id + 1} discarded Princess and is eliminated!");
             TurnLogger.Instance.Log($"Player {target.id + 1} discarded Princess and is eliminated!", game.turnNumber);
         }
         else
         {
             if (game.deck.Count == 0)
             {
-                Debug.Log($"Player {target.id + 1} discarded {discardedCard.type}. But the deck is empty, drawing removed card.");
                 TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type}. But the deck is empty, drawing removed card.", game.turnNumber);
-                
                 target.hand.Add(game.removedCard);
                 game.removedCard = null;
                 return;
             }
-            target.DrawCard(game.deck);
-            Debug.Log($"Player {target.id + 1} discarded {discardedCard.type} and drew a new card.");
+            var drawnCard = game.deck.Pop();
+            target.hand.Add(drawnCard);
+            
             TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type} and drew a new card.", game.turnNumber);
         }
     }
