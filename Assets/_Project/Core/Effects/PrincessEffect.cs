@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PrincessEffect", menuName = "Love Letter/Effects/Princess")]
 public class PrincessEffect : CardEffect
 {
+    // Will never happen as Princess is not playable anymore
+    // But in case of weird edge cases or future changes, just in case
     public override void Resolve(GameState game, PlayerState source, PlayerState target, int? guessValue)
     {
         // Player who plays Princess is eliminated
