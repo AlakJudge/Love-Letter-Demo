@@ -19,7 +19,7 @@ public class KingEffect : CardEffect
         var targetCard = target.hand[0];
         source.hand[0] = targetCard;
         target.hand[0] = sourceCard;
-        Debug.Log($"Player {source.id + 1} swaps hands with Player {target.id + 1}");
-        TurnLogger.Instance.Log($"Player {source.id + 1} swaps hands with Player {target.id + 1}.", game.turnNumber);
+        Debug.Log($"'{source.name}' swaps hands with '{target.name}'");
+        TurnLogger.Instance.Log($"'{source.name}' swaps hands with '{target.name}'.", game.turnNumber);
     }
 }

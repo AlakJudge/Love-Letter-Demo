@@ -242,7 +242,7 @@ public class UIController : MonoBehaviour
             transitionView.OnTransitionFinished += HandleRoundTransitionFinished;
 
             transitionView.ShowTransition(
-                $"Player {winner.id + 1} wins the round!\n\nGet ready for the next round...",
+                $"'{winner.name}' wins the round!\n\nGet ready for the next round...",
                 "RoundOver"
             );
         }
@@ -262,7 +262,7 @@ public class UIController : MonoBehaviour
         if (transitionView != null)
         {
             transitionView.ShowTransition(
-                $"Player {winner.id + 1} wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
+                $"'{winner.name}' wins the game with {winner.tokens} tokens!\n\nClick below for a rematch.",
                 "GameOver"
             );
         }

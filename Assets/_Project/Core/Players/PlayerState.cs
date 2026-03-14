@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerState
 {
     public readonly int id;
+    public string name;
     public int actorNumber;
     public bool isBot;
     public readonly List<CardData> hand = new();
@@ -13,9 +14,10 @@ public class PlayerState
     public bool isEliminated;
     public int tokens;
 
-    public PlayerState(int id, int actorNumber = -1, bool isBot = false, List<CardData> hand = null) 
+    public PlayerState(int id, string name = null, int actorNumber = -1, bool isBot = false, List<CardData> hand = null) 
     { 
         this.id = id; 
+        this.name = name;
         this.actorNumber = actorNumber;
         this.isBot       = isBot;
         if (hand != null)

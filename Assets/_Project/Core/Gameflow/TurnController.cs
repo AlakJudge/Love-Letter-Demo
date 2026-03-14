@@ -23,10 +23,6 @@ public class TurnController
     public event Action<string,int> OnLog; // message, turn number, etc. For logging purposes.
     public event Action<PlayerState, CardData> OnCardDrawn;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
 
     public bool ExecuteCommand(GameState game, PlayerCommand cmd, RuleValidation rules, out string error)
     {
@@ -81,7 +77,7 @@ public class TurnController
         
         game.SetAsideCard(game.deck.Pop()); // Set one card aside to use for prince effect, if necessary
         
-        OnLog?.Invoke($"New round started! Player {game.CurrentPlayer.id + 1} goes first. Removed a card and set it aside face down.", 1);
+        OnLog?.Invoke($"New round started! '{game.CurrentPlayer.name}' goes first. Removed a card and set it aside face down.", 1);
         Debug.Log($"Removed card: {game.removedCard.type}");
 
         // Deal initial hands
@@ -95,14 +91,14 @@ public class TurnController
         game.currentPlayerIndex = rng.Next(0, game.players.Count);
         game.turnNumber = 1;
 
-        Log(game, $"Player {game.CurrentPlayer.id + 1} starts the round.");
+        Log(game, $"'{game.CurrentPlayer.name}' starts the round.");
     }
 
     public void StartTurn(GameState game)
     {
         Phase = TurnPhase.StartTurn;
         game.CurrentPlayer.isProtected = false; // handmaid protection from previous turn wears off
-        Log(game, $"Player {game.CurrentPlayer.id + 1}'s turn begins.");
+        Log(game, $"'{game.CurrentPlayer.name}' begins their turn.");
         
         Phase = TurnPhase.Draw;
         Draw(game);
@@ -111,7 +107,7 @@ public class TurnController
     public void Draw(GameState game)
     {
         DrawCardForPlayer(game, game.CurrentPlayer);
-        Log(game, $"Player {game.CurrentPlayer.id + 1} draws a card.");
+        Log(game, $"'{game.CurrentPlayer.name}' draws a card.");
         Phase = TurnPhase.ChooseCard;
     }
     
@@ -193,13 +189,13 @@ public class TurnController
                 {
                     // skip guess phase and end turn if targeting self with Guard (no effect)
                     // Still creates command for consistency and potential future use, but with no guess value.
-                    Log(game, $"Player {game.CurrentPlayer.id + 1} targeted themselves with Guard. No effect.");
+                    Log(game, $"'{game.CurrentPlayer.name}' targeted themselves with Guard. No effect.");
                     return ResolveCard(game, pendingCardIndex, cmd.targetPlayerId, 0);
                 }
             else
             {
                 Phase = TurnPhase.SelectGuess;
-                Log(game, $"Player {game.CurrentPlayer.id + 1} targets Player {cmd.targetPlayerId + 1} with Guard. Now choose a card to guess.");
+                Log(game, $"'{game.CurrentPlayer.name}' targets Player '{game.players[cmd.targetPlayerId].name}' with Guard. Now choose a card to guess.");
                 OnNeedGuessSelection?.Invoke();
                 return true;
             }
@@ -229,7 +225,7 @@ public class TurnController
         var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
 
-        Log(game, $"Player {game.CurrentPlayer.id + 1} played {card.type}.");
+        Log(game, $"'{game.CurrentPlayer.name}' played {card.type}.");
 
         // Invoke event for showing targeting animation for cards with targets
         PlayerState target = null;

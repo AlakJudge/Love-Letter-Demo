@@ -37,13 +37,13 @@ public class GuardEffect : CardEffect
             target.hand.Remove(targetCard);
             target.discardPile.Add(targetCard);
             target.revealedCards.Clear();
-            Debug.Log($"Player {source.id + 1} guessed correctly! Player {target.id + 1} had {guessedCardType} and is eliminated!");
-            TurnLogger.Instance.Log($"Player {source.id + 1} guessed correctly! Player {target.id + 1} had {guessedCardType} and is eliminated!", game.turnNumber);
+            Debug.Log($"'{source.name}' guessed correctly! '{target.name}' had {guessedCardType} and is eliminated!");
+            TurnLogger.Instance.Log($"'{source.name}' guessed correctly! '{target.name}' had {guessedCardType} and is eliminated!", game.turnNumber);
         }
         else
         {
-            Debug.Log($"Player {source.id + 1} guessed {guessedCardType}, but Player {target.id + 1} has {targetCard.type}. Guess failed.");
-            TurnLogger.Instance.Log($"Player {source.id + 1} guessed {guessedCardType}, but Player {target.id + 1} doesn't have that card.", game.turnNumber);
+            Debug.Log($"'{source.name}' guessed {guessedCardType}, but '{target.name}' has {targetCard.type}. Guess failed.");
+            TurnLogger.Instance.Log($"'{source.name}' guessed {guessedCardType}, but '{target.name}' doesn't have that card.", game.turnNumber);
         }
     }
 }

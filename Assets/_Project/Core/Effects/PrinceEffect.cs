@@ -19,13 +19,13 @@ public class PrinceEffect : CardEffect
         if (discardedCard.type == CardType.Princess)
         {
             target.isEliminated = true;
-            TurnLogger.Instance.Log($"Player {target.id + 1} discarded Princess and is eliminated!", game.turnNumber);
+            TurnLogger.Instance.Log($"'{target.name}' discarded Princess and is eliminated!", game.turnNumber);
         }
         else
         {
             if (game.deck.Count == 0)
             {
-                TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type}. But the deck is empty, drawing removed card.", game.turnNumber);
+                TurnLogger.Instance.Log($"'{target.name}' discarded {discardedCard.type}. But the deck is empty, drawing removed card.", game.turnNumber);
                 target.hand.Add(game.removedCard);
                 game.removedCard = null;
                 return;
@@ -33,7 +33,7 @@ public class PrinceEffect : CardEffect
             var drawnCard = game.deck.Pop();
             target.hand.Add(drawnCard);
             
-            TurnLogger.Instance.Log($"Player {target.id + 1} discarded {discardedCard.type} and drew a new card.", game.turnNumber);
+            TurnLogger.Instance.Log($"'{target.name}' discarded {discardedCard.type} and drew a new card.", game.turnNumber);
         }
     }
 }

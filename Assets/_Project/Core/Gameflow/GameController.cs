@@ -195,7 +195,7 @@ public class GameController : MonoBehaviour
                     ? (string)nameObj
                     : $"Bot {slotIndex + 1}";
 
-                player = new PlayerState(slotIndex, actorNumber: -1, isBot: true);
+                player = new PlayerState(slotIndex, displayName, actorNumber: -1, isBot: true);
             }
             else // Humans
             {
@@ -221,7 +221,7 @@ public class GameController : MonoBehaviour
                 if (isLocal)
                     localPlayerId = slotIndex;
 
-                player = new PlayerState(slotIndex, actorNumber: actorNumber, isBot: false);
+                player = new PlayerState(slotIndex, displayName, actorNumber: actorNumber, isBot: false);
             }
 
             players.Add(player);
@@ -453,7 +453,7 @@ public class GameController : MonoBehaviour
     private void BeginTurnForCurrentPlayer()
     {
         turn.StartTurn(game);
-
+        
         var currentPlayer = game.CurrentPlayer;
 
         // If it's a bot (and not manually controlled), have it start its turn
@@ -506,41 +506,47 @@ public class GameController : MonoBehaviour
     {
         isAnimatingCardPlay = true;
 
-        // Clone the player and target objects (if exists)
-        // This prevents issues with the card effect being resolved before the animation plays
-        PlayerState playerClone = new PlayerState(player.id, player.actorNumber, player.isBot, new List<CardData>(player.hand))
+        try
         {
-            isEliminated = player.isEliminated
-        };
-        PlayerState targetClone = null;
-        if (target != null)
-        {
-            targetClone = new PlayerState(target.id, target.actorNumber, target.isBot, new List<CardData>(target.hand))
+            // Clone the player and target objects (if exists)
+            // This prevents issues with the card effect being resolved before the animation plays
+            PlayerState playerClone = new PlayerState(player.id, player.name, player.actorNumber, player.isBot, new List<CardData>(player.hand))
             {
-                isEliminated = target.isEliminated
+                isEliminated = player.isEliminated
             };
+            PlayerState targetClone = null;
+            if (target != null)
+            {
+                targetClone = new PlayerState(target.id, target.name, target.actorNumber, target.isBot, new List<CardData>(target.hand))
+                {
+                    isEliminated = target.isEliminated
+                };
+            }
+
+            // Countess rule: skip fly-in if this play is illegal
+            bool countessConflict =
+                (card.type == CardType.Prince || card.type == CardType.King) &&
+                playerClone.hand.Exists(c => c.type == CardType.Countess);
+
+            // Skip fly-in if trying to play princess
+            bool playingPrincess = card.type == CardType.Princess;
+
+            if (countessConflict || playingPrincess)
+            {
+                // optionally still show the Countess warning UI
+                yield return cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card);
+            }
+            else
+            {
+                yield return cardEffectAnimationController.AnimateCardPlay(playerClone, card, () 
+                    => cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card));
+            }
         }
-
-        // Countess rule: skip fly-in if this play is illegal
-        bool countessConflict =
-            (card.type == CardType.Prince || card.type == CardType.King) &&
-            playerClone.hand.Exists(c => c.type == CardType.Countess);
-
-        // Skip fly-in if trying to play princess
-        bool playingPrincess = card.type == CardType.Princess;
-
-        if (countessConflict || playingPrincess)
+        finally // Ensure no softlocks occur due to toggling fast mode during animation or other interruptions
         {
-            // optionally still show the Countess warning UI
-            yield return cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card);
+            isAnimatingCardPlay = false;
+            TryProcessDeferredTurn();
         }
-        else
-        {
-            yield return cardEffectAnimationController.AnimateCardPlay(playerClone, card, () 
-                => cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card));
-        }
-        isAnimatingCardPlay = false;
-        TryProcessDeferredTurn();
     }
 
     private void TryProcessDeferredTurn()

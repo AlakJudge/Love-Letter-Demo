@@ -7,7 +7,7 @@ public class WinConditionChecker
         if (activePlayers.Count == 1)
         {
             winner = activePlayers[0];
-            logMessage = $"\n---------\nPlayer {winner.id + 1} wins the round by elimination!\n---------\n";
+            logMessage = $"\n---------\n'{winner.name}' wins the round by elimination!\n---------\n";
             return true;
         }
     
@@ -26,7 +26,7 @@ public class WinConditionChecker
                 }
             }
             winner = roundWinner;
-            logMessage = $"\n---------\nPlayer {winner.id + 1} wins the round with the highest card!\n---------\n";
+            logMessage = $"\n---------\n'{winner.name}' wins the round with the highest card!\n---------\n";
             return true;
         }
         logMessage = null;
@@ -48,7 +48,7 @@ public class WinConditionChecker
             if (player.tokens >= tokensToWin)
             {
                 gameWinner = player;
-                logMessage = $"\n---------\nPlayer {gameWinner.id + 1} wins the game with {gameWinner.tokens} tokens!\n---------\n";
+                logMessage = $"\n---------\n'{gameWinner.name}' wins the game with {gameWinner.tokens} tokens!\n---------\n";
                 return true;
             }
         }

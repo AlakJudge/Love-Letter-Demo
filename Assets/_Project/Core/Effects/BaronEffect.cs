@@ -20,8 +20,8 @@ public class BaronEffect : CardEffect
             target.revealedCards.Clear();
             target.discardPile.Add(targetCard);
             target.isEliminated = true;
-            Debug.Log($"Player {target.id + 1}'s card value is lower and they're eliminated!");
-            TurnLogger.Instance.Log($"Player {target.id + 1}'s card value is lower and they're eliminated!", game.turnNumber);
+            Debug.Log($"'{target.name}'s card value is lower and they're eliminated!");
+            TurnLogger.Instance.Log($"'{target.name}'s card value is lower and they're eliminated!", game.turnNumber);
         }
         else if (sourceCard.cardValue < targetCard.cardValue)
         {
@@ -30,8 +30,8 @@ public class BaronEffect : CardEffect
             source.revealedCards.Clear();
             source.discardPile.Add(sourceCard);
             source.isEliminated = true;
-            Debug.Log($"Player {source.id + 1}'s card value is lower and they're eliminated!");
-            TurnLogger.Instance.Log($"Player {source.id + 1}'s card value is lower and they're eliminated!", game.turnNumber);
+            Debug.Log($"'{source.name}'s card value is lower and they're eliminated!");
+            TurnLogger.Instance.Log($"'{source.name}'s card value is lower and they're eliminated!", game.turnNumber);
         }
         else
         {

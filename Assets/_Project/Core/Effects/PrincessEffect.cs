@@ -13,7 +13,7 @@ public class PrincessEffect : CardEffect
         source.discardPile.Add(source.hand[0]);
         source.hand.Clear();
         source.revealedCards.Clear();
-        Debug.Log($"Player {source.id + 1} played the Princess and is eliminated!");
-        TurnLogger.Instance.Log($"Player {source.id + 1} played the Princess and is eliminated!", game.turnNumber);
+        Debug.Log($"'{source.name}' played the Princess and is eliminated!");
+        TurnLogger.Instance.Log($"'{source.name}' played the Princess and is eliminated!", game.turnNumber);
     }
 }

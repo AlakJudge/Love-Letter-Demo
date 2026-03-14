@@ -34,10 +34,10 @@ public class TurnLogger : MonoBehaviour
             
             lastTurnNumber = turnNumber;
         }
-        string timestamp = $"{message}";
-        logEntries.Add(timestamp);
-        Debug.Log(timestamp);
-        OnLogAdded?.Invoke(timestamp);
+        string logEntry = $"{message}";
+        logEntries.Add(logEntry);
+        Debug.Log(logEntry);
+        OnLogAdded?.Invoke(logEntry);
     }
 
     public List<string> GetAllLogs() => new List<string>(logEntries);
