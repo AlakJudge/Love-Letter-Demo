@@ -173,12 +173,19 @@ public class UIController : MonoBehaviour
         int oppCount = game.players.Count - 1;
         opponentAreas = new OpponentView[oppCount];
 
-        int idx = 0;
-        for (int i = 0; i < game.players.Count; i++)
+        // Order opponents starting from second player after local in turn order, wrapping around
+        var orderedOpponentIds = new List<int>();
+        for (int offset = 1; offset < game.players.Count; offset++)
         {
-            if (i == localPlayerId) continue;
+            int playerId = (localPlayerId + offset) % game.players.Count;
+            orderedOpponentIds.Add(playerId);
+        }
+
+        int idx = 0;
+        foreach (int playerId in orderedOpponentIds)
+        {
             var oppView = Instantiate(opponentAreaPrefab, opponentsContainer);
-            oppView.Bind(game.players[i], GetDisplayName(i));
+            oppView.Bind(game.players[playerId], GetDisplayName(playerId));
     
             // Hook target selection
             oppView.OnTargetSelected += targetId =>
