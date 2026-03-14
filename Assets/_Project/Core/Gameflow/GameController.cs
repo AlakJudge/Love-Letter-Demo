@@ -452,6 +452,7 @@ public class GameController : MonoBehaviour
 
     private void BeginTurnForCurrentPlayer()
     {
+        ui.RefreshAll(); // Ensure all players have cards in hand before the round starts and the first draw is made
         turn.StartTurn(game);
         
         var currentPlayer = game.CurrentPlayer;
