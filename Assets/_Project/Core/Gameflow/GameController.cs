@@ -96,7 +96,9 @@ public class GameController : MonoBehaviour
             for (int i = 0; i < playerCount; i++)
             {
                 bool isBot = i != localPlayerId;
-                players.Add(new PlayerState(i, actorNumber: 0, isBot: isBot));
+                string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
+                players.Add(new PlayerState(i, name: playerName, isBot: isBot));
+                playerNames.Add(playerName);
             }
             Debug.Log($"Created {playerCount} local players.");
         }
@@ -165,8 +167,9 @@ public class GameController : MonoBehaviour
             for (int i = 0; i < playerCount; i++)
             {
                 bool isBot = i != localPlayerId;
+                string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
                 // Offline: slot owner "0", bots for all but localPlayerId
-                fallback.Add(new PlayerState(i, actorNumber: 0, isBot: isBot));
+                fallback.Add(new PlayerState(i, name: playerName, actorNumber: 0, isBot: isBot));
             }
             return fallback;
         }
@@ -452,6 +455,15 @@ public class GameController : MonoBehaviour
 
     private void BeginTurnForCurrentPlayer()
     {
+        // Activate fast mode if only bots are playing and all players have been elimited in current round
+        if (game.CurrentPlayer.isBot && game.players.TrueForAll(p => p.isBot || p.isEliminated))
+        {
+            if (botDelay >= 0.5f)
+            {
+                ToggleFastMode();
+            }
+        }
+
         ui.RefreshAll(); // Ensure all players have cards in hand before the round starts and the first draw is made
         turn.StartTurn(game);
         
@@ -661,7 +673,7 @@ public class GameController : MonoBehaviour
             var obj = Instantiate(playerManagerPrefab, playersList);
             obj.name = $"Player_{i + 1}";
             var name = (i < playerNames.Count && !string.IsNullOrWhiteSpace(playerNames[i]))
-                ? playerNames[i] : $"Player {i + 1}";
+                ? playerNames[i] : $"Player {i+1}";
             obj.Bind(game.players[i], name);
             playerManagers[i] = obj;
         }
