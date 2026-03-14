@@ -12,7 +12,6 @@ public class PrinceEffect : CardEffect
 
         // hand and revealed cards cleanup
         target.hand.Clear();
-        target.revealedCards.Remove(discardedCard);
         game.ClearSpyRevealsForPlayer(target.id);
 
         // Check if discarded card is Princess -> eliminate

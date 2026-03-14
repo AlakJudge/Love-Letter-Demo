@@ -81,9 +81,9 @@ public static class BotTurnController
                 // Check if any opponent has revealed a Princess
                 bool opponentHasPrincess = game.players.Any(player => 
                     player.id != bot.id && 
-                    !player.isEliminated &&  
-                    player.revealedCards.Count > 0 && 
-                    player.revealedCards[0].type == CardType.Princess
+                    !player.isEliminated &&
+                    HasCardsRevealedToBot(game, bot.id, player.id) && 
+                    GetCardInTargetHand(game, player.id).type == CardType.Princess
                     );
                 if (opponentHasPrincess)
                     return i;
@@ -98,7 +98,7 @@ public static class BotTurnController
                 bool hasKnownTarget = game.players.Any(player => 
                     player.id != bot.id && 
                     !player.isEliminated &&  
-                    player.revealedCards.Count > 0
+                    HasCardsRevealedToBot(game, bot.id, player.id)
                     );
                 if (hasKnownTarget)
                     return i;
@@ -141,15 +141,15 @@ public static class BotTurnController
         {
             case CardType.Guard:
                 // Target opponent that has revealed a card to you
-                var knownTargets = validTargets.Where(player => player.revealedCards.Count > 0).ToList();
+                var knownTargets = validTargets.Where(player => HasCardsRevealedToBot(game, bot.id, player.id)).ToList();
                 if (knownTargets.Count > 0)
                     return knownTargets[Random.Range(0, knownTargets.Count)].id;
 
                 return validTargets[Random.Range(0, validTargets.Count)].id; // or random if none
 
             case CardType.Spy:
-                // Look at random opponent's hand, if they don't have any revealed cards already
-                var unknownTargets = validTargets.Where(player => player.revealedCards.Count == 0).ToList();
+                // Look at random opponent's hand, check if they don't have any revealed cards already
+                var unknownTargets = validTargets.Where(player => !HasCardsRevealedToBot(game, bot.id, player.id)).ToList();
                 if (unknownTargets.Count > 0)
                     return unknownTargets[Random.Range(0, unknownTargets.Count)].id;
 
@@ -157,9 +157,8 @@ public static class BotTurnController
 
             case CardType.Baron:
                 // Compare with opponent that has revealed card if it's lower value than yours
-                var weakerTargets = validTargets.Where(player => 
-                    player.revealedCards.Count > 0 && 
-                    player.revealedCards[0].cardValue < bot.hand[0].cardValue)
+                var weakerTargets = validTargets.Where(player => HasCardsRevealedToBot(game, bot.id, player.id) && 
+                    GetCardInTargetHand(game, player.id).cardValue < bot.hand[0].cardValue)
                     .ToList();
                 if (weakerTargets.Count > 0)
                     return weakerTargets[Random.Range(0, weakerTargets.Count)].id;
@@ -169,15 +168,15 @@ public static class BotTurnController
             case CardType.Prince:
                 // Prioritise targeting opponent with Princess
                 var princessTarget = validTargets.FirstOrDefault(player => 
-                    player.revealedCards.Count > 0 && 
-                    player.revealedCards[0].type == CardType.Princess);
+                    HasCardsRevealedToBot(game, bot.id, player.id) && 
+                    GetCardInTargetHand(game, player.id).type == CardType.Princess);
                 if (princessTarget != null)
                     return princessTarget.id;
 
                 // Prioritise revealed cards of value 5 or higher
                 var strongTargets = validTargets.Where(player =>
-                    player.revealedCards.Count > 0 &&
-                    player.revealedCards[0].cardValue >= 5)
+                    HasCardsRevealedToBot(game, bot.id, player.id) &&
+                    GetCardInTargetHand(game, player.id).cardValue >= 5)
                     .ToList();
                 if (strongTargets.Count > 0)
                     return strongTargets[Random.Range(0, strongTargets.Count)].id;
@@ -187,8 +186,8 @@ public static class BotTurnController
             case CardType.King:
                 // Swap hands with target that has revealed card of higher value than yours
                 var betterTargets = validTargets.Where(player =>
-                    player.revealedCards.Count > 0 &&
-                    player.revealedCards[0].cardValue > bot.hand[0].cardValue)
+                    HasCardsRevealedToBot(game, bot.id, player.id) &&
+                    GetCardInTargetHand(game, player.id).cardValue > bot.hand[0].cardValue)
                     .ToList();
                 if (betterTargets.Count > 0)
                     return betterTargets[Random.Range(0, betterTargets.Count)].id;
@@ -205,8 +204,8 @@ public static class BotTurnController
         var targetPlayer = game.players.First(p => p.id == targetId);
 
         // Guess a revealed card if they have one
-        if (targetPlayer.revealedCards.Count > 0)
-            return targetPlayer.revealedCards[0].cardValue;
+        if (HasCardsRevealedToBot(game, bot.id, targetId))
+            return GetCardInTargetHand(game, targetId).cardValue;
 
         // Guess most common cards
         // Weighted random based on card distribution in deck
@@ -230,9 +229,9 @@ public static class BotTurnController
                 if (weights.ContainsKey(card.cardValue))
                     weights[card.cardValue]--;
             }
-            if (player.revealedCards.Count > 0)
+            if (HasCardsRevealedToBot(game, bot.id, player.id))
             {
-                var revealedCard = player.revealedCards[0];
+                var revealedCard = GetCardInTargetHand(game, player.id);
                 if (weights.ContainsKey(revealedCard.cardValue))
                     weights[revealedCard.cardValue]--;
             }
@@ -247,5 +246,23 @@ public static class BotTurnController
     {
         return type == CardType.Guard || type == CardType.Spy || type == CardType.Baron 
             || type == CardType.Prince || type == CardType.King;
+    }
+
+    // Helper to get the card currently in target's hand
+    private static CardData GetCardInTargetHand(GameState game, int targetId)
+    {
+        var targetPlayer = game.players.First(p => p.id == targetId);
+        if (targetPlayer.hand.Count > 0)
+            return targetPlayer.hand[0];
+        return null;
+    }
+
+    // Helper to check if bot has any revealed cards for target player
+    private static bool HasCardsRevealedToBot(GameState game, int botId, int targetId)
+    {
+        return game.spyReveals.Any(
+                r => r.sourcePlayerId == botId &&
+                r.targetPlayerId == targetId
+            );
     }
 }

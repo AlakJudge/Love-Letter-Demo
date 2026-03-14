@@ -17,8 +17,8 @@ public class BaronEffect : CardEffect
         {
             // Discard target's hand and mark as eliminated
             target.hand.Remove(targetCard);
-            target.revealedCards.Clear();
             target.discardPile.Add(targetCard);
+            game.ClearSpyRevealsForPlayer(target.id);
             target.isEliminated = true;
             Debug.Log($"'{target.name}'s card value is lower and they're eliminated!");
             TurnLogger.Instance.Log($"'{target.name}'s card value is lower and they're eliminated!", game.turnNumber);
@@ -27,8 +27,8 @@ public class BaronEffect : CardEffect
         {
             // Discard owner's hand and mark as eliminated
             source.hand.Remove(sourceCard);
-            source.revealedCards.Clear();
             source.discardPile.Add(sourceCard);
+            game.ClearSpyRevealsForPlayer(source.id);
             source.isEliminated = true;
             Debug.Log($"'{source.name}'s card value is lower and they're eliminated!");
             TurnLogger.Instance.Log($"'{source.name}'s card value is lower and they're eliminated!", game.turnNumber);

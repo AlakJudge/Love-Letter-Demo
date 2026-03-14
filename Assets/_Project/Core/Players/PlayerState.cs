@@ -9,7 +9,6 @@ public class PlayerState
     public bool isBot;
     public readonly List<CardData> hand = new();
     public readonly List<CardData> discardPile = new();
-    public readonly List<CardData> revealedCards = new();
     public bool isProtected;
     public bool isEliminated;
     public int tokens;

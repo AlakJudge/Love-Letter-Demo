@@ -11,8 +11,22 @@ public class KingEffect : CardEffect
             Debug.Log("No valid targets for King. No effect.");
             return;
         }
-
+        // Clear current spy reveals for both players, since after the swap, previous info could be outdated.
         game.ClearSpyRevealsForPlayer(target.id);
+        game.ClearSpyRevealsForPlayer(source.id);
+        // Add new spy reveal info for both players to see each other's original card (since they swap hands)
+        game.spyReveals.Add(new SpyRevealInfo
+        {
+            sourcePlayerId = source.id,
+            targetPlayerId = target.id,
+            handIndex = 0
+        });
+        game.spyReveals.Add(new SpyRevealInfo
+        {
+            sourcePlayerId = target.id,
+            targetPlayerId = source.id,
+            handIndex = 0
+        });
 
         // Swap hands with target
         var sourceCard = source.hand[0];

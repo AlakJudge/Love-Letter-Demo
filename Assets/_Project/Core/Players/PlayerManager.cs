@@ -9,7 +9,6 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private int tokens;
     [SerializeField] private bool isProtected;
     [SerializeField] private bool isEliminated;
-    [SerializeField] private List<CardData> revealedCards = new();
 
     [SerializeField] private int handCount;
     [SerializeField] private int discardCount;
@@ -34,7 +33,6 @@ public class PlayerManager : MonoBehaviour
         tokens = state.tokens;
         isProtected = state.isProtected;
         isEliminated = state.isEliminated;
-        revealedCards = new List<CardData>(state.revealedCards);
         handCount = state.hand.Count;
         discardCount = state.discardPile.Count;
     }

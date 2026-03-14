@@ -53,7 +53,6 @@ public class TurnController
         {
             player.hand.Clear();
             player.discardPile.Clear();
-            player.revealedCards.Clear();
             player.isProtected = false;
             player.isEliminated = false;
             // Tokens persist across rounds

@@ -12,7 +12,7 @@ public class PrincessEffect : CardEffect
         // Send other card to discard pile too
         source.discardPile.Add(source.hand[0]);
         source.hand.Clear();
-        source.revealedCards.Clear();
+        game.ClearSpyRevealsForPlayer(source.id);
         Debug.Log($"'{source.name}' played the Princess and is eliminated!");
         TurnLogger.Instance.Log($"'{source.name}' played the Princess and is eliminated!", game.turnNumber);
     }

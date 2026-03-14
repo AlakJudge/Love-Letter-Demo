@@ -36,7 +36,7 @@ public class GuardEffect : CardEffect
             // Move card from hand to discard pile
             target.hand.Remove(targetCard);
             target.discardPile.Add(targetCard);
-            target.revealedCards.Clear();
+            game.ClearSpyRevealsForPlayer(target.id);
             Debug.Log($"'{source.name}' guessed correctly! '{target.name}' had {guessedCardType} and is eliminated!");
             TurnLogger.Instance.Log($"'{source.name}' guessed correctly! '{target.name}' had {guessedCardType} and is eliminated!", game.turnNumber);
         }
