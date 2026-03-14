@@ -399,22 +399,6 @@ public class UIController : MonoBehaviour
         RefreshPlayer();
     }
 
-    public void SetDisplayName(int playerIndex, string name)
-    {
-        if (playerIndex == localPlayerId) playerArea.SetName(name);
-        else
-        {
-            int opponentIndex = playerIndex > localPlayerId ? playerIndex - 1 : playerIndex;
-            opponentAreas[opponentIndex].SetName(name);
-        }
-    }
-
-    public void highlightSelectedCard()
-    {
-        if (selectedCardView != null)
-            selectedCardView.SetSelected(true);
-    }
-
     public void CancelCardSelection()
     {
         ClearCardSelection();
