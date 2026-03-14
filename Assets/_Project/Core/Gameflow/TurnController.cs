@@ -249,9 +249,6 @@ public class TurnController
         var resolver = new EffectResolver();
         resolver.Resolve(game, fullCmd, card);
 
-        // Once player has played a card, preivous spy knowledge is gone.
-        game.ClearSpyRevealsForPlayer(game.CurrentPlayer.id);
-
         Phase = TurnPhase.CheckOutcome;
 
         // Clear pending state
