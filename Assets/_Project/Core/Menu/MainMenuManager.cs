@@ -5,7 +5,7 @@ public class MainMenuManager : MonoBehaviour
     // Load Game Scene
     public void StartSinglePlayerGame()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("SinglePlayerRoomScene");
     }
 
     public void StartOnlineLobby()
