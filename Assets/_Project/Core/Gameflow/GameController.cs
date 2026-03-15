@@ -91,17 +91,65 @@ public class GameController : MonoBehaviour
         {
             isMultiplayer = false;
 
-            // Original local setup
             players = new List<PlayerState>();
-            for (int i = 0; i < playerCount; i++)
+            playerNames.Clear();
+
+            // Check if we have a saved single player layout
+            bool hasConfig = PlayerPrefs.HasKey("SP_Slot_0_Type");
+
+            if (hasConfig)
             {
-                bool isBot = i != localPlayerId;
-                string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
-                players.Add(new PlayerState(i, name: playerName, isBot: isBot));
-                playerNames.Add(playerName);
+                string humanName = PlayerPrefs.GetString("PlayerName", "Player");
+                int nextPlayerIndex = 0;
+                localPlayerId = -1;
+
+                for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+                {
+                    int type = PlayerPrefs.GetInt($"SP_Slot_{slotIndex}_Type", 0); // 0 = Empty
+                    if (type == 0)
+                        continue;
+
+                    bool isBot = type == 2;
+                    string displayName;
+
+                    if (isBot)
+                    {
+                        displayName = PlayerPrefs.GetString(
+                            $"SP_Slot_{slotIndex}_BotName",
+                            $"Bot {slotIndex + 1}"
+                        );
+                    }
+                    else
+                    {
+                        displayName = humanName;
+                        localPlayerId = nextPlayerIndex;
+                    }
+
+                    var playerState = new PlayerState(nextPlayerIndex, displayName, isBot: isBot);
+                    players.Add(playerState);
+                    playerNames.Add(displayName);
+
+                    nextPlayerIndex++;
+                }
+
+                playerCount = players.Count;
+                if (localPlayerId < 0)
+                    localPlayerId = 0;
             }
-            Debug.Log($"Created {playerCount} local players.");
+            else
+            { 
+                // Fallback to original local setup
+                players = new List<PlayerState>();
+                for (int i = 0; i < playerCount; i++)
+                {
+                    bool isBot = i != localPlayerId;
+                    string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
+                    players.Add(new PlayerState(i, name: playerName, isBot: isBot));
+                    playerNames.Add(playerName);
+                }
+            }
         }
+        Debug.Log($"Created {playerCount} local players.");
 
         // Create GameState + deck
         var deck = new List<CardData>(deckTemplate);
