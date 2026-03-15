@@ -15,7 +15,7 @@ public class OnlineLobbyManager : MonoBehaviourPunCallbacks
     {
         Empty = 0,
         Human = 1,
-        Bot   = 2
+        Bot = 2
     }
     
     private void Start()
