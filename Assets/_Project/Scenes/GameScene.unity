@@ -1421,37 +1421,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 298370276}
   m_CullTransparentMesh: 1
---- !u!1 &338817738
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 338817739}
-  m_Layer: 0
-  m_Name: PlayersList
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &338817739
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 338817738}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1168.5441, y: 573.92346, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &394956704
 GameObject:
   m_ObjectHideFlags: 0
@@ -6511,8 +6480,6 @@ MonoBehaviour:
   cardPlayAnimator: {fileID: 1724929612}
   showOpponentHands: 0
   manualControlBots: 0
-  playersList: {fileID: 338817739}
-  playerManagerPrefab: {fileID: 8610008582542162623, guid: 23c8df5373a48994cb899b98ebbd8ed6, type: 3}
   ui: {fileID: 1444870929}
   transitionView: {fileID: 1337053749}
   rematchButton: {fileID: 208013958}
@@ -6832,7 +6799,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1316576506}
   - {fileID: 1842202008}
-  - {fileID: 338817739}
   - {fileID: 79135382}
   - {fileID: 1867866947}
   - {fileID: 1444870930}

@@ -31,11 +31,7 @@ public class GameController : MonoBehaviour
     
     [Header("Debug")]
     public bool showOpponentHands = false; 
-    public bool manualControlBots = false;
-    
-    [Header("Players")]
-    public Transform playersList;             
-    public PlayerManager playerManagerPrefab;
+    public bool manualControlBots = false;         
 
     [Header("UI Objects")]
     public UIController ui;
@@ -47,7 +43,6 @@ public class GameController : MonoBehaviour
     public Button fastModeButton;
     public Button deckButton;
 
-    private PlayerManager[] playerManagers;
     private GameState game;
     private TurnController turn;
     private RuleValidation rules;
@@ -191,9 +186,6 @@ public class GameController : MonoBehaviour
 
         ui.OnRematchClicked += () => RestartGame();
         ui.OnQuitClicked += () => QuitToMenu();
-
-        BuildPlayerObjects();
-        ui.playerManagers = playerManagers;
 
         // Only show fast mode button in single player
         if (fastModeButton != null)
@@ -700,31 +692,6 @@ public class GameController : MonoBehaviour
         else
         {
             ui.HandleGameWin(winner);
-        }
-    }
-
-    private void BuildPlayerObjects()
-    {
-        if (playersList == null)
-        {
-            var list = new GameObject("PlayersList");
-            playersList = list.transform;
-        }
-
-        // Clear old
-        for (int i = playersList.childCount - 1; i >= 0; i--)
-            Destroy(playersList.GetChild(i).gameObject);
-
-        playerManagers = new PlayerManager[game.players.Count];
-
-        for (int i = 0; i < game.players.Count; i++)
-        {
-            var obj = Instantiate(playerManagerPrefab, playersList);
-            obj.name = $"Player_{i + 1}";
-            var name = (i < playerNames.Count && !string.IsNullOrWhiteSpace(playerNames[i]))
-                ? playerNames[i] : $"Player {i+1}";
-            obj.Bind(game.players[i], name);
-            playerManagers[i] = obj;
         }
     }
 

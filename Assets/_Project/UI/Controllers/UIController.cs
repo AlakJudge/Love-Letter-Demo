@@ -36,8 +36,6 @@ public class UIController : MonoBehaviour
     public bool showOpponentHands = false; // set by GameController
     public bool manualControlBots = false; // set by GameController
 
-    public PlayerManager[] playerManagers;
-
     private GameState game;
     private PlayerView playerArea;
     private OpponentView[] opponentAreas;
@@ -406,10 +404,6 @@ public class UIController : MonoBehaviour
 
         if (playerArea != null)
             playerArea.Refresh();
-        
-        if (playerManagers != null) // Sync player manager displays
-            foreach (var pm in playerManagers) 
-                pm.Sync();
     }
 
     public void RefreshAll()
