@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6463777548080209620}
   - component: {fileID: 6622584101390990784}
   - component: {fileID: 4350909882609627610}
+  - component: {fileID: 1397414221968333540}
   m_Layer: 5
   m_Name: OpponentAreaPanelPrefab
   m_TagString: Untagged
@@ -105,6 +106,26 @@ MonoBehaviour:
   protectedStatusPrefab: {fileID: 2434154922797512230, guid: 76d855f025c567e458b5a8d10dc43c50, type: 3}
   eliminatedStatusPrefab: {fileID: 777074525928327592, guid: 90a376eb3e5ee9648b2fe2763d8a6ce3, type: 3}
   tokenPrefab: {fileID: 6580264393149756733, guid: 6705204d38d19394681e87f0b13be0ee, type: 3}
+--- !u!114 &1397414221968333540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424187399272388419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 640
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &1625450428632928703
 GameObject:
   m_ObjectHideFlags: 0
