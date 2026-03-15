@@ -102,7 +102,6 @@ public class UIController : MonoBehaviour
 
     private void BuildAreas()
     {
-        // Clear containers
         ClearChildren(currentPlayerContainer);
         ClearChildren(opponentsContainer);
 

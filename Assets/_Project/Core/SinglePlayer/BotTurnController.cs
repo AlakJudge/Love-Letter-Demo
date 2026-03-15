@@ -54,6 +54,8 @@ public static class BotTurnController
         return commands;
     }
 
+    // Bot decision logic based on simple heuristics and known information
+    // Any spy/revealed card info is specific to the current bot player.
     private static int ChooseCardToPlay(GameState game, PlayerState bot, RuleValidation rules)
     {
         // PRIORITY 1: Must play Countess if holding Prince or King
@@ -123,7 +125,7 @@ public static class BotTurnController
                 return i;
         }
 
-        // PRIORITY 7: Player random card
+        // PRIORITY 7: Play random card
         return Random.Range(0, bot.hand.Count);
     }
 

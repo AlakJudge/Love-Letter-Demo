@@ -24,6 +24,7 @@ public class GameState
     public CardType? lastGuardGuessType = null;
     public bool lastGuardGuessCorrect   = false;
 
+    // Spy reveal info - tracks which player has seen which card in another player's hand (per observer-target pair)
     public readonly List<SpyRevealInfo> spyReveals = new();
 
     public PlayerState CurrentPlayer => players[currentPlayerIndex];
