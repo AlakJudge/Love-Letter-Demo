@@ -9,11 +9,17 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/MainMenuScene.unity
     guid: 24e23bb8fdb4b5848b3c81f3608e1331
   - enabled: 1
+    path: Assets/_Project/Scenes/OnlineRoomsScene.unity
+    guid: 6115afc7e983fba4198319ce964a9ca4
+  - enabled: 1
     path: Assets/_Project/Scenes/OnlineLobbyScene.unity
     guid: 24ddba54191f847408a60810ee859d89
   - enabled: 1
-    path: Assets/_Project/Scenes/OnlineRoomsScene.unity
-    guid: 6115afc7e983fba4198319ce964a9ca4
+    path: Assets/_Project/Scenes/SinglePlayerRoomScene.unity
+    guid: 4dddfd6a14889994eb591a7c95fb3e22
+  - enabled: 1
+    path: Assets/_Project/Scenes/SinglePlayerLobbyScene.unity
+    guid: 029ecc48f2465c545b1494b8af96463f
   - enabled: 1
     path: Assets/_Project/Scenes/GameScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
