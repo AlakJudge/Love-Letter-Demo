@@ -12,10 +12,10 @@ public class GameState
 {
     public readonly List<PlayerState> players = new();
     public readonly Stack<CardData> deck = new();
-    public readonly List<CardData> discard = new();
+    public readonly List<CardData> setupFaceUpDiscards = new();
+    public CardData removedCard;
     public int currentPlayerIndex;
     public int turnNumber;
-    public CardData removedCard;
     public int seed;
 
     // Last Guard effect info
@@ -86,5 +86,14 @@ public class GameState
         // This can be used for Prince effect to set aside a card when deck is empty
         // and retrieve it later when needed
         removedCard = card;
+    }
+
+    public void DiscardThreeCardsFor2PSetup()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            var card = deck.Pop();
+            setupFaceUpDiscards.Add(card);
+        }
     }
 }

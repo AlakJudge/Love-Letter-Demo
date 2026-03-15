@@ -489,6 +489,7 @@ public class GameController : MonoBehaviour
             int seed = Random.Range(int.MinValue, int.MaxValue);
             game.seed = seed;
             turn.StartNewRound(game, deckTemplate, seed);
+            ui.UpdateSetupDiscards();
             BeginTurnForCurrentPlayer();
             return;
         }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DiscardPileZoomView : MonoBehaviour
@@ -38,6 +39,30 @@ public class DiscardPileZoomView : MonoBehaviour
                 if (cardZoomView != null)
                     cardZoomView.Hide();
             };
+        }
+
+        gameObject.SetActive(true);
+    }
+
+    public void ShowSetupCards(IReadOnlyList<CardData> cards)
+    {
+        if (cards == null || container == null || cardPrefab == null)
+        {
+            Debug.LogError("DiscardPileZoomView not configured correctly.");
+            return;
+        }
+
+        // Clear old cards
+        for (int i = container.childCount - 1; i >= 0; i--)
+            Destroy(container.GetChild(i).gameObject);
+
+        foreach (var card in cards)
+        {
+            var view = Instantiate(cardPrefab, container);
+            view.Set(card);
+            view.onClick = null;
+            view.onLongPress = () => { if (cardZoomView != null) cardZoomView.Show(card); };
+            view.onLongPressRelease = () => { if (cardZoomView != null) cardZoomView.Hide(); };
         }
 
         gameObject.SetActive(true);

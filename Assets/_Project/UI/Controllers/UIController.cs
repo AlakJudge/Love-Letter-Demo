@@ -14,6 +14,7 @@ public class UIController : MonoBehaviour
     [Header("Buttons")]
     public Button discardPileZoomExitButton;
     public Button discardPileExpandButtonOpponents;
+    public Button setupDiscardExpandButton;
     public Button rematchButton;
     public Button quitButton;
     public Button cancelCardSelectionButton; // full screen button behind UI
@@ -22,6 +23,7 @@ public class UIController : MonoBehaviour
     public TransitionView transitionView;
     public CardZoomView cardZoomView;
     public DiscardPileZoomView discardPileZoomView;
+    public SetupDiscardView setupDiscardView;
     public CardView deckCardView;
     public TMPro.TextMeshProUGUI deckCountText;
 
@@ -68,6 +70,9 @@ public class UIController : MonoBehaviour
         // Close discard pile zoom when full-screen button is clicked
         if (discardPileZoomExitButton != null)
             discardPileZoomExitButton.onClick.AddListener(HideDiscardPile);
+
+        if (setupDiscardExpandButton != null)
+            setupDiscardExpandButton.onClick.AddListener(ShowSetupDiscardedCards);
     }
 
     public void Bind(GameState game)
@@ -284,7 +289,22 @@ public class UIController : MonoBehaviour
             discardPileZoomExitButton.gameObject.SetActive(false);
 
         if (discardPileZoomView != null)
-            discardPileZoomView.Hide();
+            discardPileZoomView.Hide();     
+    }
+
+    private void ShowSetupDiscardedCards()
+    {
+        if (game == null || discardPileZoomView == null)
+            return;
+        
+        // Only if 2-player game
+        if (game.players.Count != 2 || game.setupFaceUpDiscards.Count == 0)
+            return;
+
+        if (discardPileZoomExitButton != null)
+            discardPileZoomExitButton.gameObject.SetActive(true);
+            
+        discardPileZoomView.ShowSetupCards(game.setupFaceUpDiscards);
     }
 
     public void ShowGuardChoice()
@@ -449,5 +469,22 @@ public class UIController : MonoBehaviour
     {
         if (deckCountText != null)
             deckCountText.text = count.ToString();
+    }
+
+    public void UpdateSetupDiscards()
+    {
+        if (setupDiscardView == null) return;
+
+        // For 2 player games, show the 3 face-up setup discards in the info panel
+        if (game.players.Count == 2 && game.setupFaceUpDiscards.Count > 0)
+        {
+            setupDiscardView.gameObject.SetActive(true);
+            setupDiscardView.UpdateSetupDiscards(game.setupFaceUpDiscards);
+        }
+        else
+        {
+            setupDiscardView.gameObject.SetActive(false);
+            setupDiscardView.Clear();
+        }
     }
 }

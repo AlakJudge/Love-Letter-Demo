@@ -58,6 +58,7 @@ public class TurnController
             // Tokens persist across rounds
         }
         game.ClearSpyReveals();
+        game.setupFaceUpDiscards.Clear();
         
         // Reset turn controller state
         pendingCardIndex = -1;
@@ -75,6 +76,8 @@ public class TurnController
             game.deck.Push(card);
         
         game.SetAsideCard(game.deck.Pop()); // Set one card aside to use for prince effect, if necessary
+        if (game.players.Count == 2)
+            game.DiscardThreeCardsFor2PSetup(); // For 2 player games, discard 3 cards face up
         
         OnLog?.Invoke($"New round started! '{game.CurrentPlayer.name}' goes first. Removed a card and set it aside face down.", 1);
         Debug.Log($"Removed card: {game.removedCard.type}");
