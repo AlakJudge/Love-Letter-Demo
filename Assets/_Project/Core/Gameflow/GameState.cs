@@ -43,9 +43,22 @@ public class GameState
         spyReveals.Clear();
     }
 
-    public void ClearSpyRevealsForPlayer(int targetPlayerId)
+    public void ClearSpyRevealsForPlayer(int targetPlayerId, int? playedCardIndex = null)
     {
-        spyReveals.RemoveAll(r => r.targetPlayerId == targetPlayerId);
+        if (playedCardIndex.HasValue)
+        {
+            // Only clear the reveal for a specific card if that card was already revealed and it was the card played
+            if (playedCardIndex == 0)
+            spyReveals.RemoveAll(r =>
+                r.targetPlayerId == targetPlayerId &&
+                r.handIndex == playedCardIndex.Value
+            );
+        }
+        else
+        {
+            // Clear all reveals related to the target player (e.g. for Spy effect)
+            spyReveals.RemoveAll(r => r.targetPlayerId == targetPlayerId);
+        }
     }
 
     public IEnumerable<int> GetRevealedHandIndicesForSpyPlayer(int observerId, int targetId)
