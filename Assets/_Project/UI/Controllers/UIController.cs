@@ -381,7 +381,6 @@ public class UIController : MonoBehaviour
                     oppView.handView.ShowHand(oppState);
                 else
                 {
-                    //oppView.handView.ShowCardBack(oppState);
                     var revealedIndices = new HashSet<int>(
                         game.GetRevealedHandIndicesForSpyPlayer(localPlayerId, oppState.id)
                     );
