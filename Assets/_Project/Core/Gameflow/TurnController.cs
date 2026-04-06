@@ -228,6 +228,8 @@ public class TurnController
         var player = game.CurrentPlayer;
         var card = game.CurrentPlayer.hand[cardIndex];
 
+        game.ClearSpyRevealsForPlayer(player.id, cardIndex);
+
         Log(game, $"'{game.CurrentPlayer.name}' played {card.type}.");
 
         // Invoke event for showing targeting animation for cards with targets
