@@ -26,17 +26,5 @@ public class SpyEffect : CardEffect
             targetPlayerId = target.id,
             handIndex = 0
         });
-
-        // Only send the name of the card if they're the source or the target, otherwise just say they see a card.
-        if (GameController.Instance.IsLocalOwner(source) || GameController.Instance.IsLocalOwner(target))
-        {
-            Debug.Log($"'{source.name}' spies on '{target.name}'s hand and sees a {revealedCard.type}");
-            TurnLogger.Instance.Log($"'{source.name}' spies on '{target.name}'s hand and sees a {revealedCard.type}", game.turnNumber);
-        }            
-        else
-        {
-            Debug.Log($"'{source.name}' spies on '{target.name}'s hand and sees a card");
-            TurnLogger.Instance.Log($"'{source.name}' spies on '{target.name}'s hand and sees a card", game.turnNumber);
-        }
     }
 }

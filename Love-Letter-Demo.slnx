@@ -50,6 +50,7 @@
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.PerformanceTesting.csproj" />
   <Project Path="Unity.Services.Core.csproj" />
+  <Project Path="UI.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.Editor.csproj" />
   <Project Path="Unity.Mobile.AndroidLogcat.Editor.csproj" />
   <Project Path="Unity.AdaptivePerformance.Editor.csproj" />
@@ -76,9 +77,11 @@
   <Project Path="Unity.2D.Common.Runtime.csproj" />
   <Project Path="Unity.Services.Core.Analytics.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
+  <Project Path="Core.csproj" />
   <Project Path="Unity.Services.Core.Environments.Internal.csproj" />
   <Project Path="Unity.Notifications.Unified.csproj" />
   <Project Path="Unity.Services.Core.Networking.csproj" />
+  <Project Path="Networking.csproj" />
   <Project Path="Unity.Services.Core.Scheduler.csproj" />
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="Unity.Mathematics.Editor.csproj" />
@@ -93,6 +96,7 @@
   <Project Path="Unity.Profiling.Core.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
   <Project Path="Unity.AdaptivePerformance.Simulator.Editor.csproj" />
+  <Project Path="GameFlow.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
   <Project Path="Unity.AdaptivePerformance.Profiler.Editor.csproj" />
   <Project Path="Unity.Services.Core.Registration.csproj" />

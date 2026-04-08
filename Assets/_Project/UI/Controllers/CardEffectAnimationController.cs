@@ -7,24 +7,22 @@ public class CardEffectAnimationController : MonoBehaviour
     public CardPlayAnimator cardPlayAnimator;
     public int localPlayerId;
     
-    private float animationDelay => 
-    GameController.Instance != null ? GameController.Instance.botDelay : 1f;
-
     // For showing countess rule warning when player tries to play prince or king with countess in hand
     private CardData lastCountessWarningCard; 
 
     private UIController ui;
     private GameState game;
     private PlayerView playerArea;
+    private Func<float> animationDelay = () => 1f;
 
-    public void Bind(UIController uiController, GameState gameState, int localId, PlayerView playerAreaView)
+    public void Bind(UIController uiController, GameState gameState, int localId, PlayerView playerAreaView, Func<float> animationDelay)
     {
         ui = uiController;
         game = gameState;
         localPlayerId = localId;
         playerArea = playerAreaView;
+        this.animationDelay = animationDelay;
         Debug.Log($"CardEffectAnimationController bound. ui={ui != null}, game={game != null}, playerArea={playerArea != null}, cardPlayAnimator={cardPlayAnimator != null}");
-
     }
 
     public IEnumerator ShowCardEffect(PlayerState source, PlayerState target, CardData card)
@@ -41,7 +39,7 @@ public class CardEffectAnimationController : MonoBehaviour
                     if (princessView != null)
                     {
                         princessView.SetColor(Color.softRed);
-                        yield return new WaitForSeconds(animationDelay);
+                        yield return new WaitForSeconds(animationDelay());
                         princessView.SetColor(Color.white);
                     }
                 }
@@ -73,7 +71,7 @@ public class CardEffectAnimationController : MonoBehaviour
                                 countessCardView.SetColor(Color.softGreen);
                         }
                         // Wait, then reset
-                        yield return new WaitForSeconds(animationDelay);
+                        yield return new WaitForSeconds(animationDelay());
 
                         if (princeOrKingView != null)
                             princeOrKingView.SetColor(Color.white);
@@ -120,7 +118,7 @@ public class CardEffectAnimationController : MonoBehaviour
                         revealTarget: canSeeTarget,
                         destroyAtEnd: !isLocalBaronOwner); // Only reveal to baron player
 
-                    yield return new WaitForSeconds(animationDelay);
+                    yield return new WaitForSeconds(animationDelay());
                     cardPlayAnimator.DestroyLastCompare();
                 }
 
@@ -158,7 +156,7 @@ public class CardEffectAnimationController : MonoBehaviour
                         revealSource: true,
                         revealTarget: true);
 
-                    yield return new WaitForSeconds(animationDelay);
+                    yield return new WaitForSeconds(animationDelay());
                     cardPlayAnimator.DestroyLastCompare();
                 }
                 break;
@@ -197,7 +195,7 @@ public class CardEffectAnimationController : MonoBehaviour
                             revealSource: true,
                             revealTarget: true);
                     }
-                    yield return new WaitForSeconds(animationDelay);
+                    yield return new WaitForSeconds(animationDelay());
                     cardPlayAnimator.DestroyLastCompare();
                 }
                 break;

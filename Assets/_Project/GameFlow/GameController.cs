@@ -296,7 +296,7 @@ public class GameController : MonoBehaviour
 
         // Bind animation controller
         if (cardEffectAnimationController != null)
-            cardEffectAnimationController.Bind(ui, game, localPlayerId, ui.GetPlayerArea());
+            cardEffectAnimationController.Bind(ui, game, localPlayerId, ui.GetPlayerArea(), () => botDelay);
 
         // Handle card cancellation - reset phase to ChooseCard
         ui.OnPlayCardCancelled += () =>
@@ -594,6 +594,22 @@ public class GameController : MonoBehaviour
             {
                 yield return cardEffectAnimationController.AnimateCardPlay(playerClone, card, () 
                     => cardEffectAnimationController.ShowCardEffect(playerClone, targetClone, card));
+            }
+
+            // Only send the name of the card if they're the source or the target, otherwise just say they see a card.
+            if (card.type == CardType.Spy && target != null)
+            {
+                var revealedCard = target.hand[0];
+                if (Instance.IsLocalOwner(player) || Instance.IsLocalOwner(target))
+                {
+                    Debug.Log($"'{player.name}' spies on '{target.name}'s hand and sees a {revealedCard.type}");
+                    TurnLogger.Instance.Log($"'{player.name}' spies on '{target.name}'s hand and sees a {revealedCard.type}", game.turnNumber);
+                }            
+                else
+                {
+                    Debug.Log($"'{player.name}' spies on '{target.name}'s hand and sees a card");
+                    TurnLogger.Instance.Log($"'{player.name}' spies on '{target.name}'s hand and sees a card", game.turnNumber);
+                }
             }
         }
         finally // Ensure no softlocks occur due to toggling fast mode during animation or other interruptions

@@ -105,17 +105,16 @@ public class UIController : MonoBehaviour
         ClearChildren(currentPlayerContainer);
         ClearChildren(opponentsContainer);
 
-        // helper to get display name from GameContrroller
+        // helper to get display name from GameState
         string GetDisplayName(int playerId)
         {
-            var gc = GameController.Instance;
-            if (gc != null &&
-                gc.playerNames != null &&
+            if (game != null &&
+                game.players != null &&
                 playerId >= 0 &&
-                playerId < gc.playerNames.Count &&
-                !string.IsNullOrWhiteSpace(gc.playerNames[playerId]))
+                playerId < game.players.Count &&
+                !string.IsNullOrWhiteSpace(game.players[playerId].name))
             {
-                return gc.playerNames[playerId];
+                return game.players[playerId].name;
             }
             return $"Player {playerId + 1}";
         }
