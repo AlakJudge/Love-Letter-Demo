@@ -25,6 +25,7 @@ public class CardData : ScriptableObject
 
 public enum CardType
 {
+    None = 0,
     Guard = 1,
     Spy = 2,
     Baron = 3,

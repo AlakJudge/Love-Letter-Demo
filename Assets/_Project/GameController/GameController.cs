@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
-using ExitGames.Client.Photon.StructWrapping;
 
 public class GameController : MonoBehaviour
 {
     public static GameController Instance { get; private set; }
-
+    public GameSetup gameSetup = new GameSetup();
     private enum SlotType
     {
         Empty = 0,
@@ -17,21 +16,21 @@ public class GameController : MonoBehaviour
         Bot   = 2
     }
 
-    [Header("Setup")]
-    public int playerCount = 4;
-    public int localPlayerId = 0;
+    [Header("Game Settings")]
     [Tooltip("Seconds of delay between bot actions (play card, select target, select guess).")]
     public float botDelay = 1;
+    [Tooltip("Show opponents' hands in multiplayer (for testing)")]
+    public bool showOpponentHands = false; 
+    [Tooltip("If true, bots are manually controlled")]
+    public bool manualControlBots = false; 
+    [Tooltip("The cards used to build the deck")]
     public List<CardData> deckTemplate = new(); 
+    public List<CardData> gameDeck = new(); 
     public List<string> playerNames = new();
 
     [Header("Animation")]
     [SerializeField] private CardEffectAnimationController cardEffectAnimationController;
-    [SerializeField] private CardPlayAnimator cardPlayAnimator;
-    
-    [Header("Debug")]
-    public bool showOpponentHands = false; 
-    public bool manualControlBots = false;         
+    [SerializeField] private CardPlayAnimator cardPlayAnimator;    
 
     [Header("UI Objects")]
     public UIController ui;
@@ -46,6 +45,7 @@ public class GameController : MonoBehaviour
     private GameState game;
     private TurnController turn;
     private RuleValidation rules;
+    private int localPlayerId = 0;
 
     private bool isAnimatingCardPlay;
     private bool deferredUiRefresh; 
@@ -64,6 +64,9 @@ public class GameController : MonoBehaviour
     {
         Instance = this;
         photonView = GetComponent<PhotonView>();
+        // If we have a cached GameSetup from the menu, use that instead of the default values set in the inspector
+        if (RuntimeGameSetupCache.Current != null)
+            gameSetup = RuntimeGameSetupCache.Current;
     }
 
     void Start()
@@ -97,8 +100,14 @@ public class GameController : MonoBehaviour
                 string humanName = PlayerPrefs.GetString("PlayerName", "Player");
                 int nextPlayerIndex = 0;
                 localPlayerId = -1;
+                
+                // Check GameSetup and change number of players if it's manually set there
+                if (gameSetup.playerCount > 0 && gameSetup.playerCount <= 4)
+                    gameSetup.AddBotsToGameConfig();
+                else // Default to going through and checking 4 slots if not set and using the configured player count from lobby
+                    gameSetup.playerCount = 4;
 
-                for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+                for (int slotIndex = 0; slotIndex < gameSetup.playerCount; slotIndex++)
                 {
                     int type = PlayerPrefs.GetInt($"SP_Slot_{slotIndex}_Type", 0); // 0 = Empty
                     if (type == 0)
@@ -127,7 +136,8 @@ public class GameController : MonoBehaviour
                     nextPlayerIndex++;
                 }
 
-                playerCount = players.Count;
+                gameSetup.playerCount = players.Count;
+
                 if (localPlayerId < 0)
                     localPlayerId = 0;
             }
@@ -135,7 +145,7 @@ public class GameController : MonoBehaviour
             { 
                 // Fallback to original local setup
                 players = new List<PlayerState>();
-                for (int i = 0; i < playerCount; i++)
+                for (int i = 0; i < gameSetup.playerCount; i++)
                 {
                     bool isBot = i != localPlayerId;
                     string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
@@ -144,9 +154,9 @@ public class GameController : MonoBehaviour
                 }
             }
         }
-        Debug.Log($"Created {playerCount} local players.");
+        Debug.Log($"Created {gameSetup.playerCount} local players.");
 
-        // Create GameState + deck
+        // Create GameState
         var deck = new List<CardData>(deckTemplate);
         game = new GameState(players, deck);
         turn = new TurnController();
@@ -204,7 +214,7 @@ public class GameController : MonoBehaviour
             Debug.LogWarning("GameController: no Photon room, falling back to local players.");
             // fallback to 4 local players
             var fallback = new List<PlayerState>();
-            for (int i = 0; i < playerCount; i++)
+            for (int i = 0; i < gameSetup.playerCount; i++)
             {
                 bool isBot = i != localPlayerId;
                 string playerName = isBot ? $"Bot {i}" : $"Player {i+1}";
@@ -271,7 +281,7 @@ public class GameController : MonoBehaviour
             playerNames.Add(displayName);
         }
 
-        playerCount = players.Count;
+        gameSetup.playerCount = players.Count;
 
         if (localPlayerId < 0)
             Debug.LogWarning("GameController: localPlayerId not found from lobby slots; defaulting to 0.");
@@ -431,8 +441,7 @@ public class GameController : MonoBehaviour
     private void Rpc_StartRound(int seed)
     {
         // Called on ALL clients (including master)
-        game.seed = seed;
-        turn.StartNewRound(game, deckTemplate, seed);
+        turn.StartNewRound(game, deckTemplate, seed, gameSetup);
         BeginTurnForCurrentPlayer();
     }
 
@@ -475,23 +484,33 @@ public class GameController : MonoBehaviour
 
     public void StartNewRoundNetworked()
     {
+        // If a manual seed is set, use that instead of creating a new one
+        int seed = gameSetup.fixedSeed != 0
+            ? gameSetup.fixedSeed
+            : Random.Range(int.MinValue, int.MaxValue);
+
+        game.seed = seed;
+
         if (!isMultiplayer)
         {
             // Offline / local game
-            int seed = Random.Range(int.MinValue, int.MaxValue);
-            game.seed = seed;
-            turn.StartNewRound(game, deckTemplate, seed);
+            turn.StartNewRound(game, deckTemplate, seed, gameSetup);
             ui.UpdateSetupDiscards();
             BeginTurnForCurrentPlayer();
-            return;
         }
+        else
+        {
+            // Only master decides and broadcasts the seed
+            if (!PhotonNetwork.IsMasterClient)
+                return;
 
-        // Only master decides and broadcasts the seed
-        if (!PhotonNetwork.IsMasterClient)
-            return;
-
-        int newSeed = Random.Range(int.MinValue, int.MaxValue);
-        photonView.RPC(nameof(Rpc_StartRound), RpcTarget.All, newSeed);
+            photonView.RPC(nameof(Rpc_StartRound), RpcTarget.All, seed); 
+        }      
+        // Cache game deck to inspector
+        for (int i = 0; i < game.deck.Count; i++)
+        {
+            gameDeck.Add(game.deck.Peek());
+        } 
     }
 
     private void BeginTurnForCurrentPlayer()
@@ -753,8 +772,16 @@ public class GameController : MonoBehaviour
             transitionView.ToggleFastMode(isFast);
     }
 
+    // Ensure the current game setup is cached so it can be accessed by the rematch button
+    public static class RuntimeGameSetupCache
+    {
+        public static GameSetup Current;
+    }
+
     public void RestartGame()
     {
+        RuntimeGameSetupCache.Current = gameSetup;
+
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }

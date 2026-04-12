@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum TurnPhase { StartTurn, Draw, ChooseCard, SelectTarget, SelectGuess, ResolveEffect, CheckOutcome, EndTurn, EndRound, GameOver }
@@ -44,7 +45,7 @@ public class TurnController
         }
     }
 
-    public void StartNewRound(GameState game, List<CardData> deckTemplate, int seed)
+    public void StartNewRound(GameState game, List<CardData> deckTemplate, int seed, GameSetup gameSetup = null)
     {
         var rng = new System.Random(seed);
         
@@ -64,34 +65,64 @@ public class TurnController
         pendingCardIndex = -1;
         pendingTargetId = -1;
 
-        // Rebuild and shuffle deck
-        game.deck.Clear();
-        var newDeck = new List<CardData>(deckTemplate);
-        for (int i = newDeck.Count - 1; i > 0; i--)
+        // Rebuild and shuffle deck (if not round 1)
+        if (game.turnNumber > 1)
         {
-            int j = rng.Next(0, i + 1);
-            (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
+            game.deck.Clear();
+            var newDeck = new List<CardData>(deckTemplate);
+            for (int i = newDeck.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(0, i + 1);
+                (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
+            }
+            foreach (var card in newDeck)
+                game.deck.Push(card);
         }
-        foreach (var card in newDeck)
-            game.deck.Push(card);
-        
-        // Set aside one card for prince effect and discard 3 cards face up for 2 player setup if necessary
-        game.SetAsideCard(game.deck.Pop());
-        if (game.players.Count == 2)
-            game.DiscardThreeCardsFor2PSetup();
-        
-        OnLog?.Invoke($"New round started! '{game.CurrentPlayer.name}' goes first. Removed a card and set it aside face down.", 1);
-        Debug.Log($"Removed card: {game.removedCard.type}");
 
+        // Handle any fixed starting hands from GameSetup
+        if (game.turnNumber == 1 && gameSetup != null) // Only apply manual starting hands on the first round
+            gameSetup.ManualStartingHandsSetup(game);
+
+        // If a manual deck order is set in GameSetup, apply it to the deck
+        if (game.turnNumber == 1 && gameSetup != null && gameSetup.manualDeckOrder != null && gameSetup.manualDeckOrder.Count > 0)
+            gameSetup.SetManualDeckOrder(game, deckTemplate);
+
+        else // Normal setup
+        {        
+            // Set aside one card for prince effect and discard 3 cards face up for 2 player setup if necessary
+            game.SetAsideCard(game.deck.Pop());
+            if (game.players.Count == 2)
+                game.DiscardThreeCardsFor2PSetup();
+        }
+        
         // Deal initial hands
         foreach (var player in game.players)
         {
-            if (game.deck.Count > 0)
+            if (player.hand.Count == 0 && game.deck.Count > 0)
                 player.hand.Add(game.deck.Pop());
         }
 
-        // Pick random starting player and reset turn number
-        game.currentPlayerIndex = rng.Next(0, game.players.Count);
+        // Pick random starting player if not set by GameSetup
+        if (gameSetup != null && gameSetup.startingPlayerId >= 0 && game.players.Any(p => p.id == gameSetup.startingPlayerId))
+        {
+            for (int i = 0; i < game.players.Count; i++)
+            {
+                if (game.players[i].id == gameSetup.startingPlayerId)
+                {
+                    game.currentPlayerIndex = i;
+                    break;
+                }
+            }
+            OnLog?.Invoke($"Starting player is set by Game Setup to '{game.CurrentPlayer.name}'.", 1);
+        }
+        else
+        {
+            game.currentPlayerIndex = rng.Next(0, game.players.Count);
+        }
+
+        OnLog?.Invoke($"New round started! '{game.CurrentPlayer.name}' goes first. Removed a card and set it aside face down.", 1);
+        Debug.Log($"Removed card: {game.removedCard.type}");
+
         game.turnNumber = 1;
 
         Log(game, $"'{game.CurrentPlayer.name}' starts the round.");
