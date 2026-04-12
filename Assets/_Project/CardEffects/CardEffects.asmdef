@@ -1,0 +1,17 @@
+{
+    "name": "CardEffects",
+    "rootNamespace": "",
+    "references": [
+        "GUID:54d4febc856d10444a796784a51d627c",
+        "GUID:cf670971e14e08749be217090ba55bd9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
