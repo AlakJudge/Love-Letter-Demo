@@ -52,6 +52,7 @@
   <Project Path="Unity.Services.Core.csproj" />
   <Project Path="UI.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.Editor.csproj" />
+  <Project Path="CardEffects.csproj" />
   <Project Path="Unity.Mobile.AndroidLogcat.Editor.csproj" />
   <Project Path="Unity.AdaptivePerformance.Editor.csproj" />
   <Project Path="Unity.2D.Animation.Runtime.csproj" />
@@ -95,12 +96,13 @@
   <Project Path="PunDemos.DemoSlotcarEditor.csproj" />
   <Project Path="Unity.Profiling.Core.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
+  <Project Path="Logging.csproj" />
   <Project Path="Unity.AdaptivePerformance.Simulator.Editor.csproj" />
-  <Project Path="GameFlow.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
   <Project Path="Unity.AdaptivePerformance.Profiler.Editor.csproj" />
   <Project Path="Unity.Services.Core.Registration.csproj" />
   <Project Path="Unity.AdaptivePerformance.Simulator.Extension.csproj" />
+  <Project Path="GameFlow.csproj" />
   <Project Path="Unity.AdaptivePerformance.Simulator.Google.Extension.Editor.csproj" />
   <Project Path="Unity.Services.Core.Environments.csproj" />
   <Project Path="Unity.Collections.Editor.csproj" />
