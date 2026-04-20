@@ -23,9 +23,10 @@ public class GameController : MonoBehaviour
     public bool showOpponentHands = false; 
     [Tooltip("If true, bots are manually controlled")]
     public bool manualControlBots = false; 
+    [Tooltip("The deck cards and their order for this round")]
+    public List<CardData> gameDeck = new(); 
     [Tooltip("The cards used to build the deck")]
     public List<CardData> deckTemplate = new(); 
-    public List<CardData> gameDeck = new(); 
     public List<string> playerNames = new();
 
     [Header("Animation")]
@@ -102,7 +103,7 @@ public class GameController : MonoBehaviour
                 localPlayerId = -1;
                 
                 // Check GameSetup and change number of players if it's manually set there
-                if (gameSetup.playerCount > 0 && gameSetup.playerCount <= 4)
+                if (gameSetup.enableCustomSetup && gameSetup.playerCount > 0 && gameSetup.playerCount <= 4)
                     gameSetup.AddBotsToGameConfig();
                 else // Default to going through and checking 4 slots if not set and using the configured player count from lobby
                     gameSetup.playerCount = 4;
@@ -485,10 +486,15 @@ public class GameController : MonoBehaviour
     public void StartNewRoundNetworked()
     {
         // If a manual seed is set, use that instead of creating a new one
-        int seed = gameSetup.fixedSeed != 0
-            ? gameSetup.fixedSeed
-            : Random.Range(int.MinValue, int.MaxValue);
-
+        int seed;
+        if (gameSetup.enableCustomSetup && gameSetup.fixedSeed != 0)
+        {
+            seed = gameSetup.fixedSeed;
+        }
+        else
+        {
+            seed = Random.Range(int.MinValue, int.MaxValue);
+        }
         game.seed = seed;
 
         if (!isMultiplayer)
@@ -507,9 +513,9 @@ public class GameController : MonoBehaviour
             photonView.RPC(nameof(Rpc_StartRound), RpcTarget.All, seed); 
         }      
         // Cache game deck to inspector
-        for (int i = 0; i < game.deck.Count; i++)
+        foreach (var card in game.deck)
         {
-            gameDeck.Add(game.deck.Peek());
+            gameDeck.Add(card);
         } 
     }
 

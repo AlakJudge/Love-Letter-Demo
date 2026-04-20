@@ -6,6 +6,8 @@ using System;
 [System.Serializable]
 public class GameSetup
 {
+    [Tooltip("If true, the game will use the custom settings below instead of normal random setup")]
+    public bool enableCustomSetup = false;
     [Tooltip("If < 0, use normal random starting player. Otherwise, set the index for the starting player (0-3)")]
     public int startingPlayerId = -1;
     [Tooltip("The starting hands for each player (1-4)")]
@@ -22,6 +24,8 @@ public class GameSetup
 
     public void AddBotsToGameConfig()
     {
+        if (!enableCustomSetup) return;
+        
         Debug.Log($"Using player count from GameSetup: {playerCount}");
         
         // Check if config has enough configured bots to match gameSetup's playerCount, if not, create more.

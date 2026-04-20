@@ -65,26 +65,33 @@ public class TurnController
         pendingCardIndex = -1;
         pendingTargetId = -1;
 
-        // Rebuild and shuffle deck (if not round 1)
-        if (game.turnNumber > 1)
+        // Rebuild and shuffle deck 
+        game.deck.Clear();
+        var newDeck = new List<CardData>(deckTemplate);
+        for (int i = newDeck.Count - 1; i > 0; i--)
         {
-            game.deck.Clear();
-            var newDeck = new List<CardData>(deckTemplate);
-            for (int i = newDeck.Count - 1; i > 0; i--)
-            {
-                int j = rng.Next(0, i + 1);
-                (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
-            }
-            foreach (var card in newDeck)
-                game.deck.Push(card);
+            int j = rng.Next(0, i + 1);
+            (newDeck[i], newDeck[j]) = (newDeck[j], newDeck[i]);
         }
+        foreach (var card in newDeck)
+            game.deck.Push(card);
+        
+
 
         // Handle any fixed starting hands from GameSetup
-        if (game.turnNumber == 1 && gameSetup != null) // Only apply manual starting hands on the first round
+        if (game.turnNumber == 1 && // Only apply manual starting hands on the first round
+            gameSetup != null && 
+            gameSetup.enableCustomSetup
+            ) 
             gameSetup.ManualStartingHandsSetup(game);
 
         // If a manual deck order is set in GameSetup, apply it to the deck
-        if (game.turnNumber == 1 && gameSetup != null && gameSetup.manualDeckOrder != null && gameSetup.manualDeckOrder.Count > 0)
+        if (game.turnNumber == 1 && 
+            gameSetup != null && 
+            gameSetup.enableCustomSetup && 
+            gameSetup.manualDeckOrder != null && 
+            gameSetup.manualDeckOrder.Count > 0
+            )
             gameSetup.SetManualDeckOrder(game, deckTemplate);
 
         else // Normal setup
@@ -103,7 +110,10 @@ public class TurnController
         }
 
         // Pick random starting player if not set by GameSetup
-        if (gameSetup != null && gameSetup.startingPlayerId >= 0 && game.players.Any(p => p.id == gameSetup.startingPlayerId))
+        if (gameSetup != null && 
+            gameSetup.enableCustomSetup && 
+            gameSetup.startingPlayerId >= 0 && 
+            game.players.Any(p => p.id == gameSetup.startingPlayerId))
         {
             for (int i = 0; i < game.players.Count; i++)
             {
